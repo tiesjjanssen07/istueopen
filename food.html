@@ -16,8 +16,12 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Is the TU/e open? Live opening hours for every building.">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://istueopen.nl/food.html">
 <link rel="alternate" hreflang="en" href="https://istueopen.nl/food.html">
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten.html">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
 </head>
 <body>
 
@@ -52,6 +56,7 @@
   <li>Click a name to see it on the map.</li>
   <li>TU/e doesn't list weekend hours for the canteens, so they are shown as closed at weekends.</li>
   <li>Hours often change during holidays, the summer and exam weeks (sometimes with extra dinner options).</li>
+  <li>Tip: add this site to your phone's home screen (browser menu → “Add to Home screen”) to open it like an app.</li>
 </ul>
 
 <hr>
@@ -86,10 +91,15 @@ function render() {
       return f.name + (f.building ? " (" + f.building + ")" : "");
     }).join(", ") + ".";
   }
+  var hol = holidayWarning(now);
+  if (hol) {
+    answer.textContent = "⚠️ NOT SURE: it's " + hol + ".";
+    summary.textContent = "Hours may differ today. The tables below show the normal hours.";
+  }
   document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 }
 
-document.getElementById("checked").textContent = window.HOURS_CHECKED || "unknown";
+document.getElementById("checked").textContent = checkedText();
 keepFresh(render);
 </script>
 <!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->

@@ -8,6 +8,9 @@
 <link rel="icon" type="image/png" href="../favicon.png">
 <link rel="alternate" hreflang="en" href="https://istueopen.nl/report.html">
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden.html">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
 </head>
 <body>
 
@@ -64,6 +67,11 @@ import { getFirestore, collection, addDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
+if (!window.FIREBASE_CONFIG || String(window.FIREBASE_CONFIG.apiKey).startsWith("PASTE")) {
+  $("status").textContent = "Meldingen zijn nog niet ingesteld (firebase-config.js ontbreekt of is niet ingevuld).";
+  $("send").disabled = true;
+  throw new Error("Firebase config missing");
+}
 const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
 
 $("form").addEventListener("submit", async () => {
