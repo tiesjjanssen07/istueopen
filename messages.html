@@ -20,12 +20,14 @@
     <legend>Write a message</legend>
     <p><label>Your name<br><input id="name" maxlength="50" required></label></p>
     <p><label>Message<br><textarea id="text" rows="4" cols="40" maxlength="1000" required></textarea></label></p>
+    <script>if (document.documentElement.clientWidth < 400) document.getElementById("text").cols = 28; // fit small phones</script>
   </fieldset>
 
   <fieldset>
     <legend>Draw something (optional)</legend>
     <p><small>Hold down the mouse button (or your finger) in the yellow box and move to draw.</small></p>
     <canvas id="canvas" width="400" height="300">Your browser can't show the drawing area.</canvas>
+    <script>document.getElementById("canvas").width = Math.min(400, document.documentElement.clientWidth - 80); // fit phone screens</script>
     <p>
       <label>Colour <input type="color" id="color" value="#000000"></label>
       <label>Brush size <input type="range" id="size" min="1" max="30" value="4"></label>
@@ -46,6 +48,7 @@
 <script>
 // Shows a message if the Firebase code fails to load, instead of doing nothing.
 window.addEventListener("error", function (e) {
+  if (e.target && e.target.src && e.target.src.indexOf("zgo.at") !== -1) return; // visitor counter blocked by an ad blocker: harmless
   var s = document.getElementById("status");
   if (s) s.textContent = "Something failed to load: " + (e.message || (e.target && e.target.src) || "unknown error") + ". Try opening the online (GitHub Pages) version.";
 }, true);
@@ -73,7 +76,6 @@ const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
 
 /* ---------- Drawing area ---------- */
 const canvas = $("canvas");
-canvas.width = Math.min(400, window.innerWidth - 40); // fit small phone screens
 const ctx = canvas.getContext("2d");
 const PAPER = "#fff6cc"; // light yellow so you can see where to draw
 let drawing = false, hasDrawing = false, last = null;
@@ -171,7 +173,7 @@ function renderMessage(m) {
   art.append(p);
   if (typeof m.drawing === "string" && m.drawing.startsWith("data:image/png;base64,")) {
     const img = document.createElement("img");
-    img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
+    img.width = Math.min(400, document.documentElement.clientWidth - 60); img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
     art.append(img);
   }
   if (m.createdAt?.toDate) {

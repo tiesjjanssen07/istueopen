@@ -26,16 +26,7 @@
 
 <h2>All buildings</h2>
 <table border="1" cellpadding="6" cellspacing="0">
-  <thead>
-    <tr>
-      <th>Building</th>
-      <th>Right now</th>
-      <th>Today</th>
-      <th>Mon–Fri</th>
-      <th>Sat–Sun</th>
-      <th>Notes</th>
-    </tr>
-  </thead>
+  <thead id="head"></thead>
   <tbody id="buildings"></tbody>
 </table>
 
@@ -139,6 +130,13 @@ function cell(row, content, bold) {
 
 function render() {
   var now = amsterdamNow();
+  var narrow = window.innerWidth < 600;
+  var head = document.getElementById("head");
+  head.replaceChildren();
+  var hr = document.createElement("tr");
+  (narrow ? ["Building", "Right now", "Today"] : ["Building", "Right now", "Today", "Mon–Fri", "Sat–Sun", "Notes"])
+    .forEach(function (t) { var h = document.createElement("th"); h.scope = "col"; h.textContent = t; hr.append(h); });
+  head.append(hr);
   var tbody = document.getElementById("buildings");
   tbody.replaceChildren();
   var openNames = [], total = 0;
@@ -152,11 +150,18 @@ function render() {
 
     var tr = document.createElement("tr");
     var th = document.createElement("th"); th.scope = "row"; th.textContent = b.name; tr.append(th);
+    var wk = b.weekdays ? b.weekdays.replace("-", "–") : "Closed";
+    var we = b.weekend ? b.weekend.replace("-", "–") : "Closed";
+    if (narrow) {
+      // Phones: fewer columns, the weekly hours and notes go under the name.
+      var small = document.createElement("small");
+      small.append(document.createElement("br"), "Mon–Fri " + wk, document.createElement("br"), "Sat–Sun " + we);
+      if (b.note) small.append(document.createElement("br"), b.note);
+      th.append(small);
+    }
     cell(tr, (s.open ? "✅ " : "❌ ") + s.text, s.open);
     cell(tr, (today.range ? today.range.replace("-", "–") : "Closed") + (today.label ? " (" + today.label + ")" : ""));
-    cell(tr, b.weekdays ? b.weekdays.replace("-", "–") : "Closed");
-    cell(tr, b.weekend ? b.weekend.replace("-", "–") : "Closed");
-    cell(tr, b.note || "");
+    if (!narrow) { cell(tr, wk); cell(tr, we); cell(tr, b.note || ""); }
     tbody.append(tr);
   });
 
@@ -180,6 +185,10 @@ function render() {
 document.getElementById("checked").textContent = window.HOURS_CHECKED || "unknown";
 render();
 setInterval(render, 30000);
+var lastNarrow = window.innerWidth < 600;
+window.addEventListener("resize", function () {
+  if ((window.innerWidth < 600) !== lastNarrow) { lastNarrow = !lastNarrow; render(); }
+});
 </script>
 <!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->
 <script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

@@ -38,6 +38,7 @@
 <script>
 // Shows a message if the Firebase code fails to load, instead of doing nothing.
 window.addEventListener("error", function (e) {
+  if (e.target && e.target.src && e.target.src.indexOf("zgo.at") !== -1) return; // visitor counter blocked by an ad blocker: harmless
   var s = document.getElementById("loginStatus");
   if (s) s.textContent = "Something failed to load: " + (e.message || (e.target && e.target.src) || "unknown error") + ". Try opening the online (GitHub Pages) version.";
 }, true);
@@ -150,7 +151,7 @@ function renderMessage(m, showApprove) {
   art.append(p);
   if (typeof m.drawing === "string" && m.drawing.startsWith("data:image/png;base64,")) {
     const img = document.createElement("img");
-    img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
+    img.width = Math.min(400, document.documentElement.clientWidth - 60); img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
     art.append(img);
   }
   const info = document.createElement("p");
