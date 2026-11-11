@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Verkeerde tijden melden – Is de TU/e open?</title>
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="alternate" hreflang="en" href="https://istueopen.nl/report.html">
+<link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden.html">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Is het open?</a> |
+  <a href="eten.html">Eten</a> |
+  <a href="../report.html" hreflang="en" lang="en">English</a>
+</nav>
+<hr>
+
+<h1>Klopt een tijd niet?</h1>
+<p>Bedankt dat je helpt deze site te laten kloppen! Laat weten welke plek niet klopt en wat de juiste tijden zijn.
+Alleen ik zie deze meldingen; ze worden niet gepubliceerd.</p>
+
+<form id="form" onsubmit="return false">
+  <fieldset>
+    <legend>Fout melden</legend>
+    <p><label>Welke plek?<br><select id="place" required><option value="">Kies…</option></select></label></p>
+    <p><label>Wat klopt er niet, en wat is wel juist?<br>
+      <textarea id="text" rows="5" cols="40" maxlength="500" required placeholder="Bijv. Flux sluit nu om 20:00 op vrijdag (bordje bij de ingang)."></textarea></label></p>
+    <script>if (document.documentElement.clientWidth < 400) document.getElementById("text").cols = 28;</script>
+    <p><button type="submit" id="send">Melding versturen</button> <span id="status" role="status"></span></p>
+  </fieldset>
+</form>
+
+<p><small>Zet er geen persoonlijke gegevens in. Onofficieel studentenproject, niet verbonden aan de TU/e.</small></p>
+
+<script src="../hours.js"></script>
+<script>
+// Fill the dropdown from hours.js, so new places appear automatically.
+(function () {
+  var select = document.getElementById("place");
+  [["Gebouwen", window.BUILDINGS], ["Andere voorzieningen", window.SERVICES], ["Eten", window.FOOD]].forEach(function (group) {
+    var og = document.createElement("optgroup"); og.label = group[0];
+    (group[1] || []).forEach(function (p) {
+      var o = document.createElement("option"); o.value = o.textContent = p.name; og.append(o);
+    });
+    select.append(og);
+  });
+  var o = document.createElement("option"); o.value = "Something else"; o.textContent = "Iets anders"; select.append(o);
+  var wanted = new URLSearchParams(location.search).get("place");
+  if (wanted) select.value = wanted;
+})();
+
+window.addEventListener("error", function (e) {
+  if (e.target && e.target.src && e.target.src.indexOf("zgo.at") !== -1) return;
+  document.getElementById("status").textContent = "Er kon iets niet laden. Probeer het later nog eens.";
+}, true);
+</script>
+<script src="../firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = (id) => document.getElementById(id);
+const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
+
+$("form").addEventListener("submit", async () => {
+  const place = $("place").value, text = $("text").value.trim();
+  if (!place || !text) { $("status").textContent = "Kies een plek en beschrijf wat er niet klopt."; return; }
+  $("send").disabled = true;
+  $("status").textContent = "Versturen…";
+  try {
+    await addDoc(collection(db, "reports"), { place, text, createdAt: serverTimestamp() });
+    $("form").reset();
+    $("status").textContent = "Bedankt! Ik check het en pas de site aan.";
+    setTimeout(() => { $("send").disabled = false; }, 20000);
+  } catch (err) {
+    console.error(err);
+    $("status").textContent = "Sorry, versturen is mislukt (" + err.code + "). Probeer het later nog eens.";
+    $("send").disabled = false;
+  }
+});
+</script>
+<!-- Anonieme bezoekersteller (GoatCounter): geen cookies, geen persoonsgegevens -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

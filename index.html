@@ -4,14 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Is the TU/e open?</title>
-<meta name="description" content="Which TU/e campus buildings are open right now? Live opening hours for every building, where to study, where to eat, and a student message board.">
+<meta name="description" content="Which TU/e campus buildings are open right now? Live opening hours for every building, where to study and where to eat.">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Is the TU/e open?">
+<meta property="og:title" content="Is the TU/e open?">
+<meta property="og:description" content="Which TU/e buildings are open right now? Live opening hours, where to study and where to eat.">
+<meta property="og:url" content="https://istueopen.nl/">
+<meta property="og:image" content="https://istueopen.nl/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Is the TU/e open? Live opening hours for every building.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://istueopen.nl/">
+<link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/">
 </head>
 <body>
 
 <nav>
   <a href="index.html">Is it open?</a> |
   <a href="food.html">Food</a> |
-  <a href="messages.html">Message board</a>
+  <a href="nl/index.html" hreflang="nl" lang="nl">Nederlands</a>
 </nav>
 <hr>
 
@@ -36,12 +49,20 @@
   <tbody id="buildings"></tbody>
 </table>
 
+<h2>Other services</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead id="services-head"></thead>
+  <tbody id="services"></tbody>
+</table>
+<p><small>Library hours: <a href="https://www.tue.nl/library">tue.nl/library</a> · Sports Centre hours: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
+
 <h2>Good to know</h2>
 <ul>
   <li>Times are Dutch time (Europe/Amsterdam). The page updates itself every 30 seconds.</li>
   <li>⚠️ means a building closes within 30 minutes.</li>
   <li>Hours can differ during holidays, the Christmas break, the summer and exam periods.</li>
   <li>Buildings with a reception are only accessible during opening hours. Some buildings need a campus card.</li>
+  <li>Click a building's name to see it on the map.</li>
   <li>Hungry? See <a href="food.html">where you can get food right now</a>.</li>
 </ul>
 
@@ -52,6 +73,7 @@
     Hours last checked: <span id="checked"></span>, taken from the
     <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">official TU/e opening hours page</a>.
     When in doubt, trust the official page.
+    <a href="report.html">Spotted wrong hours? Let me know.</a>
     This site counts visits anonymously with GoatCounter, without cookies.
   </small></p>
 </footer>
@@ -63,6 +85,7 @@ function render() {
   var now = amsterdamNow();
   renderBanner("banner", now);
   renderTable("head", "buildings", window.BUILDINGS, now, false);
+  renderTable("services-head", "services", window.SERVICES, now, true);
 
   // Big answer
   var withHours = window.BUILDINGS.filter(function (b) { return b.weekdays || b.weekend; });

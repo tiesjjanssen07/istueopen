@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Report wrong hours – Is the TU/e open?</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="alternate" hreflang="en" href="https://istueopen.nl/report.html">
+<link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden.html">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Is it open?</a> |
+  <a href="food.html">Food</a> |
+  <a href="nl/melden.html" hreflang="nl" lang="nl">Nederlands</a>
+</nav>
+<hr>
+
+<h1>Spotted wrong hours?</h1>
+<p>Thanks for helping keep this site correct! Tell me which place is wrong and what the right hours are.
+Only I can see these reports; they are not published.</p>
+
+<form id="form" onsubmit="return false">
+  <fieldset>
+    <legend>Report a mistake</legend>
+    <p><label>Which place?<br><select id="place" required><option value="">Choose…</option></select></label></p>
+    <p><label>What's wrong, and what is correct?<br>
+      <textarea id="text" rows="5" cols="40" maxlength="500" required placeholder="E.g. Flux closes at 20:00 on Fridays now (sign at the entrance)."></textarea></label></p>
+    <script>if (document.documentElement.clientWidth < 400) document.getElementById("text").cols = 28;</script>
+    <p><button type="submit" id="send">Send report</button> <span id="status" role="status"></span></p>
+  </fieldset>
+</form>
+
+<p><small>Please don't include personal information. Unofficial student project, not affiliated with TU/e.</small></p>
+
+<script src="hours.js"></script>
+<script>
+// Fill the dropdown from hours.js, so new places appear automatically.
+(function () {
+  var select = document.getElementById("place");
+  [["Buildings", window.BUILDINGS], ["Other services", window.SERVICES], ["Food", window.FOOD]].forEach(function (group) {
+    var og = document.createElement("optgroup"); og.label = group[0];
+    (group[1] || []).forEach(function (p) {
+      var o = document.createElement("option"); o.value = o.textContent = p.name; og.append(o);
+    });
+    select.append(og);
+  });
+  var o = document.createElement("option"); o.value = o.textContent = "Something else"; select.append(o);
+  var wanted = new URLSearchParams(location.search).get("place");
+  if (wanted) select.value = wanted;
+})();
+
+window.addEventListener("error", function (e) {
+  if (e.target && e.target.src && e.target.src.indexOf("zgo.at") !== -1) return;
+  document.getElementById("status").textContent = "Something failed to load. Try again later.";
+}, true);
+</script>
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = (id) => document.getElementById(id);
+const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
+
+$("form").addEventListener("submit", async () => {
+  const place = $("place").value, text = $("text").value.trim();
+  if (!place || !text) { $("status").textContent = "Please choose a place and describe the problem."; return; }
+  $("send").disabled = true;
+  $("status").textContent = "Sending…";
+  try {
+    await addDoc(collection(db, "reports"), { place, text, createdAt: serverTimestamp() });
+    $("form").reset();
+    $("status").textContent = "Thank you! I'll check it and update the site.";
+    setTimeout(() => { $("send").disabled = false; }, 20000);
+  } catch (err) {
+    console.error(err);
+    $("status").textContent = "Sorry, sending failed (" + err.code + "). Please try again later.";
+    $("send").disabled = false;
+  }
+});
+</script>
+<!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

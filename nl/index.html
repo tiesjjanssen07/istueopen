@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is de TU/e open?</title>
+<meta name="description" content="Welke TU/e-gebouwen zijn nu open? Live openingstijden van alle gebouwen, waar je kunt studeren en waar je kunt eten.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Is de TU/e open?">
+<meta property="og:title" content="Is de TU/e open?">
+<meta property="og:description" content="Welke TU/e-gebouwen zijn nu open? Live openingstijden, waar je kunt studeren en waar je kunt eten.">
+<meta property="og:url" content="https://istueopen.nl/nl/">
+<meta property="og:image" content="https://istueopen.nl/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Is de TU/e open? Live openingstijden van alle gebouwen.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://istueopen.nl/">
+<link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Is het open?</a> |
+  <a href="eten.html">Eten</a> |
+  <a href="../index.html" hreflang="en" lang="en">English</a>
+</nav>
+<hr>
+
+<div id="banner" hidden></div>
+
+<h1>Is de TU/e nu open?</h1>
+<h2 id="answer">Even kijken…</h2>
+<p id="summary"></p>
+<p id="clock"></p>
+
+<noscript>
+  <p><b>Zet JavaScript aan om te zien welke gebouwen nu open zijn.</b>
+  Je kunt ook de <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">officiële openingstijden</a> bekijken.</p>
+</noscript>
+
+<h2>📚 Waar kan ik nu studeren?</h2>
+<div id="study"></div>
+
+<h2>Alle gebouwen</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead id="head"></thead>
+  <tbody id="buildings"></tbody>
+</table>
+
+<h2>Andere voorzieningen</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead id="services-head"></thead>
+  <tbody id="services"></tbody>
+</table>
+<p><small>Tijden bibliotheek: <a href="https://www.tue.nl/library">tue.nl/library</a> · Tijden Studentensportcentrum: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
+
+<h2>Goed om te weten</h2>
+<ul>
+  <li>Alle tijden zijn Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
+  <li>⚠️ betekent dat een gebouw binnen 30 minuten sluit.</li>
+  <li>Tijden kunnen afwijken tijdens feestdagen, de kerstvakantie, de zomer en tentamenperiodes.</li>
+  <li>Gebouwen met een receptie zijn alleen tijdens openingstijden toegankelijk. Voor sommige gebouwen heb je een campuskaart nodig.</li>
+  <li>Klik op de naam van een gebouw om het op de kaart te zien.</li>
+  <li>Honger? Kijk <a href="eten.html">waar je nu eten kunt halen</a>.</li>
+</ul>
+
+<hr>
+<footer>
+  <p><small>
+    <b>Onofficieel studentenproject, niet gemaakt door of verbonden aan de TU/e.</b>
+    Tijden laatst gecontroleerd: <span id="checked"></span>, overgenomen van de
+    <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">officiële openingstijdenpagina van de TU/e</a>.
+    Twijfel je? Dan geldt de officiële pagina.
+    <a href="melden.html">Klopt een tijd niet? Laat het me weten.</a>
+    Deze site telt bezoeken anoniem met GoatCounter, zonder cookies.
+  </small></p>
+</footer>
+
+<script src="../hours.js"></script>
+<script src="../open.js"></script>
+<script>
+function render() {
+  var now = amsterdamNow();
+  renderBanner("banner", now);
+  renderTable("head", "buildings", window.BUILDINGS, now, false);
+  renderTable("services-head", "services", window.SERVICES, now, true);
+
+  // Big answer
+  var withHours = window.BUILDINGS.filter(function (b) { return b.weekdays || b.weekend; });
+  var open = withHours.filter(function (b) { return status(b, now).open; });
+  var answer = document.getElementById("answer"), summary = document.getElementById("summary");
+  if (open.length === 0) {
+    answer.textContent = "❌ NEE, alle gebouwen zijn dicht.";
+    summary.textContent = "In de tabel zie je wanneer je gebouw weer opengaat.";
+  } else if (open.length >= withHours.length - 1) {
+    answer.textContent = "✅ JA, de campus is open!";
+    summary.textContent = open.length + " van de " + withHours.length + " gebouwen zijn open.";
+  } else {
+    answer.textContent = "🟡 GEDEELTELIJK, alleen sommige gebouwen zijn open.";
+    summary.textContent = "Nu open: " + open.map(function (b) { return b.name; }).join(", ") + ".";
+  }
+  document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
+
+  // Where to study
+  var box = document.getElementById("study");
+  box.replaceChildren();
+  var study = window.BUILDINGS.filter(function (b) { return b.study; });
+  var openStudy = study.filter(function (b) { return status(b, now).open; })
+    .sort(function (a, b) { return status(b, now).until - status(a, now).until; });
+  var ul = el("ul");
+  if (openStudy.length) {
+    openStudy.forEach(function (b) {
+      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^✅ /, "") + (noteOf(b) ? " (" + noteOf(b) + ")" : ""));
+      ul.append(li);
+    });
+    box.append(ul);
+  } else {
+    box.append(el("p", "Er zijn nu geen studiegebouwen open. Ze gaan weer open:"));
+    study.forEach(function (b) {
+      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^❌ Gesloten, /, ""));
+      ul.append(li);
+    });
+    box.append(ul);
+  }
+}
+
+document.getElementById("checked").textContent = window.HOURS_CHECKED || "onbekend";
+keepFresh(render);
+</script>
+<!-- Anonieme bezoekersteller (GoatCounter): geen cookies, geen persoonsgegevens -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

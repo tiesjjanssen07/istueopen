@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kan ik eten halen op de campus? – Is de TU/e open?</title>
+<meta name="description" content="Welke kantines, koffiebars en cafés op de TU/e-campus zijn nu open?">
+<link rel="icon" type="image/png" href="../favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Is de TU/e open?">
+<meta property="og:title" content="Kan ik eten halen op de campus? – Is de TU/e open?">
+<meta property="og:description" content="Welke kantines, koffiebars en cafés op de TU/e-campus zijn nu open?">
+<meta property="og:url" content="https://istueopen.nl/nl/eten.html">
+<meta property="og:image" content="https://istueopen.nl/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Is de TU/e open? Live openingstijden van alle gebouwen.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://istueopen.nl/food.html">
+<link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten.html">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Is het open?</a> |
+  <a href="eten.html">Eten</a> |
+  <a href="../food.html" hreflang="en" lang="en">English</a>
+</nav>
+<hr>
+
+<div id="banner" hidden></div>
+
+<h1>Kan ik nu eten halen op de campus?</h1>
+<h2 id="answer">Even kijken…</h2>
+<p id="summary"></p>
+<p id="clock"></p>
+
+<noscript>
+  <p><b>Zet JavaScript aan om te zien wat er nu open is.</b>
+  Je kunt ook de <a href="https://www.tue.nl/universiteit/over-de-universiteit/faciliteiten/catering">officiële cateringpagina van de TU/e</a> bekijken.</p>
+</noscript>
+
+<h2>Alle plekken om te eten en drinken</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead id="head"></thead>
+  <tbody id="food"></tbody>
+</table>
+
+<h2>Goed om te weten</h2>
+<ul>
+  <li>Kantines zijn vooral doordeweeks rond lunchtijd open. 's Avonds en in het weekend is Hubble meestal je beste optie.</li>
+  <li>Klik op een naam om de plek op de kaart te zien.</li>
+  <li>De TU/e noemt geen weekendtijden voor de kantines, dus die staan in het weekend als gesloten.</li>
+  <li>Tijden veranderen vaak tijdens vakanties, de zomer en tentamenweken (soms met extra avondeten).</li>
+</ul>
+
+<hr>
+<footer>
+  <p><small>
+    <b>Onofficieel studentenproject, niet gemaakt door of verbonden aan de TU/e.</b>
+    Tijden laatst gecontroleerd: <span id="checked"></span>, overgenomen van de
+    <a href="https://www.tue.nl/universiteit/over-de-universiteit/faciliteiten/catering">officiële cateringpagina van de TU/e</a>.
+    Twijfel je? Dan geldt de officiële pagina.
+    <a href="melden.html">Klopt een tijd niet? Laat het me weten.</a>
+    Deze site telt bezoeken anoniem met GoatCounter, zonder cookies.
+  </small></p>
+</footer>
+
+<script src="../hours.js"></script>
+<script src="../open.js"></script>
+<script>
+function render() {
+  var now = amsterdamNow();
+  renderBanner("banner", now);
+  renderTable("head", "food", window.FOOD, now, true);
+
+  var known = window.FOOD.filter(function (f) { return !f.unknown; });
+  var open = known.filter(function (f) { return status(f, now).open; });
+  var answer = document.getElementById("answer"), summary = document.getElementById("summary");
+  if (open.length === 0) {
+    answer.textContent = "❌ NEE, alles met bekende tijden is dicht.";
+    summary.textContent = "In de tabel zie je wat als eerste weer opengaat. Het Student Sports Café is 7 dagen per week open (tijden op de website).";
+  } else {
+    answer.textContent = "✅ JA, " + open.length + (open.length === 1 ? " plek is" : " plekken zijn") + " open.";
+    summary.textContent = "Nu open: " + open.map(function (f) {
+      return f.name + (f.building ? " (" + f.building + ")" : "");
+    }).join(", ") + ".";
+  }
+  document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
+}
+
+document.getElementById("checked").textContent = window.HOURS_CHECKED || "onbekend";
+keepFresh(render);
+</script>
+<!-- Anonieme bezoekersteller (GoatCounter): geen cookies, geen persoonsgegevens -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

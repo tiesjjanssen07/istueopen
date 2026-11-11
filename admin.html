@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Admin – Student message board</title>
+<title>Admin – Is the TU/e open?</title>
+<link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
 
@@ -25,15 +26,14 @@
   <p>Logged in as <b id="who"></b> <button type="button" id="logout">Log out</button></p>
   <p id="adminStatus" role="status"></p>
 
-  <h2>Waiting for approval (<span id="pendingCount">0</span>)</h2>
-  <div id="pending"></div>
+  <h2>Reports about wrong hours (<span id="reportCount">0</span>)</h2>
+  <p><small>Fix the hours in hours.js, upload it, then delete the report.</small></p>
+  <div id="reports"></div>
 
-  <h2>Published (<span id="approvedCount">0</span>)</h2>
-  <div id="approved"></div>
 </div>
 
 <hr>
-<p><a href="messages.html">Back to the message board</a> | <a href="index.html">Is it open?</a> | <a href="food.html">Food</a></p>
+<p><a href="index.html">Is it open?</a> | <a href="food.html">Food</a></p>
 
 <script>
 // Shows a message if the Firebase code fails to load, instead of doing nothing.
@@ -52,7 +52,7 @@ setTimeout(function () {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc }
+import { getFirestore, collection, onSnapshot, doc, deleteDoc }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -103,36 +103,31 @@ onAuthStateChanged(auth, (user) => {
   if (!user) return;
   $("who").textContent = user.email;
   $("adminStatus").textContent = "";
-  stopListening.push(watch("pending", $("pending"), $("pendingCount"), true));
-  stopListening.push(watch("approved", $("approved"), $("approvedCount"), false));
+  stopListening.push(watchReports());
 });
 
 /* ---------- Message lists ---------- */
-function watch(status, box, countEl, showApprove) {
+function watchReports() {
+  const box = $("reports");
   box.replaceChildren(text("p", "Loading…"));
-  const q = query(collection(db, "messages"), where("status", "==", status));
-  return onSnapshot(q, (snap) => {
+  return onSnapshot(collection(db, "reports"), (snap) => {
     const list = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort(newestFirst);
-    countEl.textContent = list.length;
+    $("reportCount").textContent = list.length;
     box.replaceChildren();
-    if (list.length === 0) { box.append(text("p", "Nothing here.")); return; }
-    for (const m of list) box.append(renderMessage(m, showApprove));
-  }, (err) => {
-    console.error(err);
-    box.replaceChildren(text("p", err.code === "permission-denied"
-      ? "This account is not the admin account (check the UID in your Firestore rules)."
-      : "Couldn't load messages."));
-  });
-}
-
-async function approve(id) {
-  try { await updateDoc(doc(db, "messages", id), { status: "approved" }); }
-  catch (err) { console.error(err); $("adminStatus").textContent = "Approving failed: " + err.code; }
-}
-async function remove(id, name) {
-  if (!confirm("Delete the message from " + (name || "someone") + "? This can't be undone.")) return;
-  try { await deleteDoc(doc(db, "messages", id)); }
-  catch (err) { console.error(err); $("adminStatus").textContent = "Deleting failed: " + err.code; }
+    if (list.length === 0) { box.append(text("p", "No reports. 🎉")); return; }
+    const ul = document.createElement("ul");
+    for (const r of list) {
+      const li = document.createElement("li");
+      li.append(text("b", r.place + ": "), r.text + " ");
+      if (r.createdAt?.toDate) li.append(text("small", "(" + r.createdAt.toDate().toLocaleString() + ") "));
+      li.append(button("Delete", async () => {
+        try { await deleteDoc(doc(db, "reports", r.id)); }
+        catch (err) { console.error(err); $("adminStatus").textContent = "Deleting failed: " + err.code; }
+      }));
+      ul.append(li);
+    }
+    box.append(ul);
+  }, (err) => { console.error(err); box.replaceChildren(text("p", "Couldn't load reports (" + err.code + "). Did you publish the new firestore.rules?")); });
 }
 
 function newestFirst(a, b) {
@@ -143,25 +138,6 @@ function button(label, onClick) {
   const b = document.createElement("button"); b.type = "button"; b.textContent = label;
   b.addEventListener("click", onClick); return b;
 }
-function renderMessage(m, showApprove) {
-  const art = document.createElement("article");
-  art.append(text("h3", m.name || "Someone"));
-  const p = document.createElement("p");
-  String(m.text || "").split("\n").forEach((line, i) => { if (i) p.append(document.createElement("br")); p.append(line); });
-  art.append(p);
-  if (typeof m.drawing === "string" && m.drawing.startsWith("data:image/png;base64,")) {
-    const img = document.createElement("img");
-    img.width = Math.min(400, document.documentElement.clientWidth - 60); img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
-    art.append(img);
-  }
-  const info = document.createElement("p");
-  if (m.createdAt?.toDate) info.append(text("small", m.createdAt.toDate().toLocaleString() + " "));
-  if (showApprove) info.append(button("Approve", () => approve(m.id)), " ");
-  info.append(button("Delete", () => remove(m.id, m.name)));
-  art.append(info, document.createElement("hr"));
-  return art;
-}
-window.pageReady = true;
 </script>
 </body>
 </html>
