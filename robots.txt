@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /report.html
+Disallow: /nl/melden.html
+
+Sitemap: https://istueopen.nl/sitemap.xml
