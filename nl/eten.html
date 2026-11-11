@@ -56,9 +56,9 @@
 <ul>
   <li>Tik op ☆ naast een naam om die bovenaan vast te zetten.</li>
   <li>Kantines zijn vooral doordeweeks rond lunchtijd open. 's Avonds en in het weekend is Hubble meestal je beste optie.</li>
-  <li>Klik op een naam om de plek op de kaart te zien.</li>
+  <li>Tik op een naam om de plek op de kaart te zien.</li>
   <li>De TU/e noemt geen weekendtijden voor de kantines, dus die staan in het weekend als gesloten.</li>
-  <li>Tijden veranderen vaak tijdens vakanties, de zomer en tentamenweken (soms met extra avondeten).</li>
+  <li>Tijden veranderen vaak tijdens vakanties, de zomer en tentamenweken (soms met extra opties voor avondeten).</li>
   <li>Tip: zet deze site op het beginscherm van je telefoon (browsermenu → ‘Toevoegen aan beginscherm’ of ‘Zet op beginscherm’) om hem als app te openen.</li>
 </ul>
 
@@ -82,7 +82,7 @@ function render() {
   var now = amsterdamNow();
   renderBanner("banner", now);
   renderTable("head", "food", window.FOOD, now, true);
-  renderMine("mine", window.FOOD, now, "⭐ Jouw plekken");
+  renderMine("mine", window.FOOD, now, "Jouw plekken");
 
   var known = window.FOOD.filter(function (f) { return !f.unknown; });
   var open = known.filter(function (f) { return status(f, now).open; });
@@ -98,8 +98,8 @@ function render() {
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "⚠️ NIET ZEKER: het is " + hol + ".";
-    summary.textContent = "De tijden kunnen vandaag afwijken. De tabellen hieronder tonen de normale tijden.";
+    answer.textContent = "NIET ZEKER, het is " + hol + ".";
+    summary.textContent = "Vandaag kunnen de tijden anders zijn. In de tabel staan de normale tijden.";
   }
   document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 }
@@ -107,7 +107,7 @@ function render() {
 document.getElementById("checked").textContent = checkedText();
 keepFresh(render);
 </script>
-<!-- Anonieme bezoekersteller (GoatCounter): geen cookies, geen persoonsgegevens -->
+<!-- goatcounter -->
 <script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

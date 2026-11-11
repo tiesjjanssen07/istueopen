@@ -48,7 +48,7 @@
   Je kunt ook de <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">officiële openingstijden</a> bekijken.</p>
 </noscript>
 
-<h2>📚 Waar kan ik nu studeren?</h2>
+<h2>Waar kan ik nu studeren?</h2>
 <div id="study"></div>
 
 <h2>Alle gebouwen</h2>
@@ -62,16 +62,16 @@
   <thead id="services-head"></thead>
   <tbody id="services"></tbody>
 </table>
-<p><small>Tijden bibliotheek: <a href="https://www.tue.nl/library">tue.nl/library</a> · Tijden Studentensportcentrum: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
+<p><small>Openingstijden bibliotheek: <a href="https://www.tue.nl/library">tue.nl/library</a> · Studentensportcentrum: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
 
 <h2>Goed om te weten</h2>
 <ul>
-  <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met 📤 Delen stuur je een link naar precies dat gebouw.</li>
-  <li>Alle tijden zijn Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
+  <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met Delen stuur je iemand een link naar dat gebouw.</li>
+  <li>Alle tijden zijn in Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
   <li>⚠️ betekent dat een gebouw binnen 30 minuten sluit.</li>
   <li>Tijden kunnen afwijken tijdens feestdagen, de kerstvakantie, de zomer en tentamenperiodes.</li>
   <li>Gebouwen met een receptie zijn alleen tijdens openingstijden toegankelijk. Voor sommige gebouwen heb je een campuskaart nodig.</li>
-  <li>Klik op de naam van een gebouw om het op de kaart te zien.</li>
+  <li>Tik op de naam van een gebouw om het op de kaart te zien.</li>
   <li>Honger? Kijk <a href="eten.html">waar je nu eten kunt halen</a>.</li>
   <li>Tip: zet deze site op het beginscherm van je telefoon (browsermenu → ‘Toevoegen aan beginscherm’ of ‘Zet op beginscherm’) om hem als app te openen.</li>
 </ul>
@@ -99,9 +99,8 @@ function render() {
   renderTable("services-head", "services", window.SERVICES, now, true);
   renderWeather("weather", now);
   renderExam("exam", now);
-  renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "⭐ Jouw gebouwen");
+  renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "Jouw gebouwen");
 
-  // Big answer
   var withHours = window.BUILDINGS.filter(function (b) { return b.weekdays || b.weekend; });
   var open = withHours.filter(function (b) { return status(b, now).open; });
   var answer = document.getElementById("answer"), summary = document.getElementById("summary");
@@ -112,17 +111,16 @@ function render() {
     answer.textContent = "✅ JA, de campus is open!";
     summary.textContent = open.length + " van de " + withHours.length + " gebouwen zijn open.";
   } else {
-    answer.textContent = "🟡 GEDEELTELIJK, alleen sommige gebouwen zijn open.";
+    answer.textContent = "DEELS, alleen een paar gebouwen zijn open.";
     summary.textContent = "Nu open: " + open.map(function (b) { return b.name; }).join(", ") + ".";
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "⚠️ NIET ZEKER: het is " + hol + ".";
-    summary.textContent = "De tijden kunnen vandaag afwijken. De tabellen hieronder tonen de normale tijden.";
+    answer.textContent = "NIET ZEKER, het is " + hol + ".";
+    summary.textContent = "Vandaag kunnen de tijden anders zijn. In de tabellen staan de normale tijden.";
   }
   document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 
-  // Where to study
   var box = document.getElementById("study");
   box.replaceChildren();
   var study = window.BUILDINGS.filter(function (b) { return b.study; });
@@ -136,7 +134,7 @@ function render() {
     });
     box.append(ul);
   } else {
-    box.append(el("p", "Er zijn nu geen studiegebouwen open. Ze gaan weer open:"));
+    box.append(el("p", "Er is nu geen studiegebouw open. Ze gaan weer open:"));
     study.forEach(function (b) {
       var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^❌ Gesloten, /, ""));
       ul.append(li);
@@ -148,7 +146,7 @@ function render() {
 document.getElementById("checked").textContent = checkedText();
 keepFresh(render);
 </script>
-<!-- Anonieme bezoekersteller (GoatCounter): geen cookies, geen persoonsgegevens -->
+<!-- goatcounter -->
 <script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

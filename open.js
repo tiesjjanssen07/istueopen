@@ -1,7 +1,6 @@
-// Shared "is it open?" logic for index.html and food.html.
-// You normally don't need to edit this file: hours live in hours.js.
+// logic for the opening hours pages (the hours themselves are in hours.js)
 
-// Language: pages with <html lang="nl"> get Dutch texts.
+// dutch pages have <html lang="nl">
 var NL = document.documentElement.lang === "nl";
 function t(en, nl) { return NL ? nl : en; }
 var DAYS = NL ? ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"]
@@ -11,9 +10,9 @@ var MONTHS = NL ? ["januari", "februari", "maart", "april", "mei", "juni", "juli
 function noteOf(b) { return (NL && b.noteNl) || b.note || ""; }
 function labelOf(sp) { return sp ? ((NL && sp.labelNl) || sp.label) : ""; }
 var SHORT = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-var SOON = 30; // minutes before closing to show a warning
+var SOON = 30; // minutes
 
-// Current date and time in the Netherlands, wherever the visitor is.
+// always use dutch time, also for visitors abroad
 function amsterdamNow() {
   var parts = {};
   new Intl.DateTimeFormat("en-GB", {
@@ -39,7 +38,7 @@ function prettyDate(dateStr) {
 }
 function toMinutes(hhmm) { var p = hhmm.split(":"); return Number(p[0]) * 60 + Number(p[1]); }
 function parseRange(r) {
-  if (!r || r === "?") return null; // "?" = unknown that day
+  if (!r || r === "?") return null;
   var p = r.split("-");
   var open = toMinutes(p[0]), close = toMinutes(p[1]);
   if (close <= open) close += 24 * 60; // closes after midnight
@@ -52,7 +51,6 @@ function fmt(min) {
 }
 function dash(r) { return r ? r.replace("-", "–") : t("Closed", "Gesloten"); }
 
-// Hours for one place on one date (special days win over the normal week).
 function hoursOn(b, dateStr, day) {
   var normal = (day === 6 && b.saturday !== undefined) ? b.saturday
              : (day === 0 && b.sunday !== undefined) ? b.sunday
@@ -67,14 +65,13 @@ function hoursOn(b, dateStr, day) {
   }
   return { range: normal, label: "" };
 }
-// "07:30-20:00" capped at "16:00" becomes "07:30-16:00"; a place that opens later is closed.
+// used for days like christmas eve when everything closes early
 function capRange(r, closeAt) {
   var p = parseRange(r), c = toMinutes(closeAt);
   if (!p) return r;
   if (p.open >= c) return null;
   return p.close > c ? r.split("-")[0] + "-" + closeAt : r;
 }
-// "11 November 2026" / "11 november 2026" from window.HOURS_CHECKED ("YYYY-MM-DD").
 function checkedText() {
   var c = window.HOURS_CHECKED;
   if (!c) return t("unknown", "onbekend");
@@ -83,7 +80,6 @@ function checkedText() {
   return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear();
 }
 
-// Text for the weekend column, e.g. "10:00–21:00" or "Sat 08:30–21:00, Sun 09:00–17:00".
 function weekendText(b) {
   if (b.saturday !== undefined || b.sunday !== undefined) {
     var sat = b.saturday !== undefined ? b.saturday : b.weekend;
@@ -93,7 +89,6 @@ function weekendText(b) {
   return dash(b.weekend);
 }
 
-// Link that opens the place in Google Maps.
 function mapLink(b) {
   var q = b.mapQuery || ((b.building && b.building !== b.name ? b.name + " " + b.building : b.name) + " TU Eindhoven");
   var a = el("a", b.name);
@@ -103,7 +98,6 @@ function mapLink(b) {
   return a;
 }
 
-// Is this place open right now? Returns { open, soon, until, text }.
 function status(b, now) {
   if (b.unknown) return { open: false, unknown: true, text: t("❔ Hours unknown", "❔ Tijden onbekend") };
   function openUntil(close) {
@@ -112,7 +106,7 @@ function status(b, now) {
       ? { open: true, soon: true, until: close, text: t("⚠️ Closes in ", "⚠️ Sluit over ") + left + " min (" + fmt(close) + ")" }
       : { open: true, soon: false, until: close, text: t("✅ Open until ", "✅ Open tot ") + fmt(close) };
   }
-  // Still open from yesterday (after midnight)?
+  // still open from yesterday? (luna, hubble)
   var y = parseRange(hoursOn(b, addDays(now.date, -1), (now.day + 6) % 7).range);
   if (y && y.close > 1440 && now.minutes < y.close - 1440) return openUntil(y.close - 1440);
 
@@ -131,7 +125,7 @@ function status(b, now) {
 
 function el(tag, text) { var e = document.createElement(tag); if (text != null) e.textContent = text; return e; }
 
-// Draws the big table. Phones (< 600 px) get fewer columns.
+// phones get fewer columns
 function renderTable(headId, bodyId, items, now, withBuilding) {
   var narrow = window.innerWidth < 600;
   var head = document.getElementById(headId), body = document.getElementById(bodyId);
@@ -149,7 +143,7 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
     var tr = el("tr");
     var th = el("th"); th.scope = "row";
     var name = mapLink(b);
-    if (linkedName() === b.name) { var mk = el("mark"); mk.append("👉 ", name); th.append(mk); } else th.append(name);
+    if (linkedName() === b.name) { var mk = el("mark"); mk.append(name); th.append(mk); } else th.append(name);
     th.append(" ", starButton(b));
     tr.append(th);
     if (narrow) {
@@ -173,7 +167,7 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
   });
 }
 
-// ---------- Dutch public holidays (calculated, so they work for every year) ----------
+// dutch public holidays
 function easterSunday(year) {
   var a = year % 19, b = Math.floor(year / 100), c = year % 100, d = Math.floor(b / 4), e = b % 4;
   var f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
@@ -181,10 +175,9 @@ function easterSunday(year) {
   var month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
   return year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day;
 }
-// Name of the public holiday (or extra warning day from hours.js) on a date, or null.
 function holidayOn(dateStr) {
   var year = Number(dateStr.slice(0, 4)), md = dateStr.slice(5), easter = easterSunday(year);
-  // King's Day is 27 April, or 26 April when the 27th is a Sunday.
+  // king's day moves to the 26th if the 27th is a sunday
   var kings = new Date(year + "-04-27T12:00:00Z").getUTCDay() === 0 ? "04-26" : "04-27";
   var list = {};
   list[year + "-01-01"] = ["New Year's Day", "Nieuwjaarsdag"];
@@ -202,19 +195,16 @@ function holidayOn(dateStr) {
   var extra = window.WARNING_DAYS && (window.WARNING_DAYS[dateStr] || window.WARNING_DAYS[md]);
   return extra ? ((NL && extra.nameNl) || extra.name) : null;
 }
-// Holiday name if today needs an "hours may differ" warning (not when exact special hours are set).
 function holidayWarning(now) {
   if (window.SPECIAL_DAYS && window.SPECIAL_DAYS[now.date]) return null;
   return holidayOn(now.date);
 }
 
-// Banner: warnings and special days, today and in the next 14 days.
 function renderBanner(id, now) {
   var box = document.getElementById(id);
   box.replaceChildren();
   var days = window.SPECIAL_DAYS || {};
   var today = days[now.date], holiday = holidayWarning(now);
-  // Group consecutive days with the same label into one range.
   var upcoming = [], run = null;
   for (var i = 1; i <= 15; i++) {
     var d = addDays(now.date, i), label = i > 14 ? null : days[d] ? labelOf(days[d]) : holidayOn(d);
@@ -225,19 +215,18 @@ function renderBanner(id, now) {
   if (!today && !holiday && upcoming.length === 0) { box.hidden = true; return; }
   box.hidden = false;
   var p = el("p");
-  if (today) p.append(el("b", t("📅 Special hours today: ", "📅 Aangepaste tijden vandaag: ") + labelOf(today) + "."),
+  if (today) p.append(el("b", t("Special hours today: ", "Aangepaste tijden vandaag: ") + labelOf(today) + "."),
     t(" The times below already take this into account.", " De tijden hieronder houden hier al rekening mee."));
-  else if (holiday) p.append(el("b", t("⚠️ Hours may differ today because it's " + holiday + ".", "⚠️ Tijden kunnen vandaag afwijken omdat het " + holiday + " is.")),
-    t(" The times below are the normal hours, so check the official page to be sure.", " De tijden hieronder zijn de normale tijden; check de officiële pagina voor de zekerheid."));
+  else if (holiday) p.append(el("b", t("Hours may be different today because it's " + holiday + ".", "Vandaag kunnen de tijden anders zijn, want het is " + holiday + ".")),
+    t(" The times below are the normal hours, so check the official page to be sure.", " Hieronder staan de normale tijden, dus check voor de zekerheid de officiële pagina."));
   if (upcoming.length) {
     if (today || holiday) p.append(el("br"));
-    p.append(el("b", t("📅 Coming up: ", "📅 Binnenkort: ")), upcoming.slice(0, 4).join(" · ") + (upcoming.length > 4 ? t(" · and more", " · en meer") : "") + "."
-      + t(" Hours may differ on those days.", " Op die dagen kunnen de tijden afwijken."));
+    p.append(el("b", t("Coming up: ", "Binnenkort: ")), upcoming.slice(0, 4).join(" · ") + (upcoming.length > 4 ? t(" · and more", " · en meer") : "") + "."
+      + t(" Hours may be different on those days.", " Op die dagen kunnen de tijden anders zijn."));
   }
   box.append(p, el("hr"));
 }
 
-// Re-run a render function every 30 s, when a phone is rotated, and when you come back to the tab.
 function keepFresh(render) {
   window.rerender = render;
   render();
@@ -249,10 +238,7 @@ function keepFresh(render) {
   });
 }
 
-
-// ====================================================================
-// ⭐ Favourites ("my buildings"), remembered in this browser only.
-// ====================================================================
+// favourites (only stored in the browser)
 var FAV_KEY = "istueopen-favourites";
 function favs() {
   try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch (e) { return []; }
@@ -274,9 +260,7 @@ function starButton(b) {
   return btn;
 }
 
-// ====================================================================
-// 🔗 Links to one place: ?b=Flux highlights Flux and puts it at the top.
-// ====================================================================
+// links like ?b=Flux
 function linkedName() {
   var wanted;
   try { wanted = new URLSearchParams(location.search).get("b"); } catch (e) { return null; }
@@ -286,25 +270,23 @@ function linkedName() {
   return null;
 }
 function shareButton(b) {
-  var btn = el("button", t("📤 Share", "📤 Delen"));
+  var btn = el("button", t("Share", "Delen"));
   btn.type = "button";
   btn.addEventListener("click", function () {
     var url = location.origin + location.pathname + "?b=" + encodeURIComponent(b.name);
     var text = t("Is " + b.name + " open right now?", "Is " + b.name + " nu open?");
-    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = t("📤 Share", "📤 Delen"); }, 2500); }
+    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = t("Share", "Delen"); }, 2500); }
     if (navigator.share) {
       navigator.share({ title: text, text: text, url: url }).catch(function () {});
     } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(url).then(function () { done(t("✅ Link copied!", "✅ Link gekopieerd!")); },
+      navigator.clipboard.writeText(url).then(function () { done(t("Link copied", "Link gekopieerd")); },
                                              function () { done(url); });
     } else done(url);
   });
   return btn;
 }
 
-// ====================================================================
-// ➡️ Where to go next: another place from the same list that stays open longer.
-// ====================================================================
+// where to go when a place closes
 function nextPlace(b, items, now) {
   var s = status(b, now);
   if (!s.open) return null;
@@ -316,7 +298,6 @@ function nextPlace(b, items, now) {
   });
   return best ? { place: best, until: bestUntil } : null;
 }
-// Text like "→ then: MetaForum (until 22:00)" when b closes within the hour.
 function nextText(b, items, now) {
   var s = status(b, now);
   if (!s.open || s.until - now.minutes > 60) return "";
@@ -325,7 +306,6 @@ function nextText(b, items, now) {
   return t(" → nothing similar is open later", " → daarna is er niets vergelijkbaars meer open");
 }
 
-// The "⭐ Your buildings" box: favourites plus the linked place.
 function renderMine(boxId, items, now, title) {
   var box = document.getElementById(boxId);
   box.replaceChildren();
@@ -351,9 +331,7 @@ function renderMine(boxId, items, now, title) {
   box.append(ul, el("hr"));
 }
 
-// ====================================================================
-// 📚 Exam-period countdown (dates in hours.js, from the TU/e academic calendar).
-// ====================================================================
+// exam periods
 function daysBetween(a, b) { return Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / 86400000); }
 function renderExam(id, now) {
   var box = document.getElementById(id);
@@ -362,23 +340,21 @@ function renderExam(id, now) {
   for (var i = 0; i < periods.length; i++) {
     var p = periods[i], untilStart = daysBetween(now.date, p.start), untilEnd = daysBetween(now.date, p.end);
     if (untilStart <= 0 && untilEnd >= 0) {
-      box.append(el("b", t("📚 It's exam period", "📚 Het is tentamenperiode")),
-        t(" (until " + prettyDate(p.end) + "). Good luck! Flux and Neuron are usually open at weekends from 10:00 to 21:00 during exams; check TU/e's announcements.",
-          " (tot " + prettyDate(p.end) + "). Succes! Flux en Neuron zijn in tentamenperiodes meestal ook in het weekend open van 10:00 tot 21:00; check de aankondigingen van de TU/e."));
+      box.append(el("b", t("It's exam period", "Het is tentamenperiode")),
+        t(" (until " + prettyDate(p.end) + "). During exams Flux and Neuron are usually also open at weekends, 10:00–21:00. Keep an eye on TU/e's announcements.",
+          " (tot " + prettyDate(p.end) + "). In tentamenperiodes zijn Flux en Neuron meestal ook in het weekend open, van 10:00 tot 21:00. Houd de aankondigingen van de TU/e in de gaten."));
       box.hidden = false; return;
     }
     if (untilStart > 0 && untilStart <= 21) {
-      box.append(el("b", t("📚 Exam period starts in " + untilStart + (untilStart === 1 ? " day" : " days"),
-                           "📚 Tentamenperiode begint over " + untilStart + (untilStart === 1 ? " dag" : " dagen"))),
+      box.append(el("b", t("Exam period starts in " + untilStart + (untilStart === 1 ? " day" : " days"),
+                           "De tentamenperiode begint over " + untilStart + (untilStart === 1 ? " dag" : " dagen"))),
         " (" + prettyDate(p.start) + " – " + prettyDate(p.end) + ").");
       box.hidden = false; return;
     }
   }
 }
 
-// ====================================================================
-// 🌧️ Rain warning for cycling (Open-Meteo, free, no account; fetched every 15 min).
-// ====================================================================
+// rain forecast from open-meteo, refreshed every 15 min
 var weatherCache = null, weatherFetched = 0;
 function renderWeather(id, now) {
   var box = document.getElementById(id);
@@ -402,13 +378,13 @@ function drawWeather(box, hourly, now) {
   if (wet(i0)) {
     var dry = -1;
     for (var i = i0 + 1; i <= i0 + 6 && i < hourly.time.length; i++) if (!wet(i)) { dry = i; break; }
-    msg = dry !== -1 ? t("🌧️ Rain on campus now, probably dry from about " + at(dry) + ".", "🌧️ Het regent nu op de campus, waarschijnlijk droog vanaf ongeveer " + at(dry) + ".")
-                     : t("🌧️ Rain on campus for the next few hours. Bring a raincoat!", "🌧️ De komende uren regen op de campus. Neem een regenjas mee!");
+    msg = dry !== -1 ? t("It's raining on campus, probably dry again around " + at(dry) + ".", "Het regent op de campus, rond " + at(dry) + " is het waarschijnlijk weer droog.")
+                     : t("Rain on campus for the next few hours, so bring a raincoat.", "De komende uren regen op de campus, dus neem een regenjas mee.");
   } else {
     var rain = -1;
     for (var j = i0 + 1; j <= i0 + 3 && j < hourly.time.length; j++) if (wet(j)) { rain = j; break; }
-    msg = rain !== -1 ? t("🌦️ Rain expected around " + at(rain) + ". Cycle before then if you can.", "🌦️ Rond " + at(rain) + " wordt regen verwacht. Fiets als het kan daarvoor.")
-                      : t("🚲 Dry on campus for the next 3 hours.", "🚲 De komende 3 uur droog op de campus.");
+    msg = rain !== -1 ? t("Rain expected around " + at(rain) + ", so try to cycle before then.", "Rond " + at(rain) + " wordt regen verwacht, dus fiets als het kan voor die tijd.")
+                      : t("Dry on campus for the next 3 hours.", "De komende 3 uur blijft het droog op de campus.");
   }
   box.replaceChildren();
   var a = el("a", "Open-Meteo.com"); a.href = "https://open-meteo.com/"; a.target = "_blank"; a.rel = "noopener";

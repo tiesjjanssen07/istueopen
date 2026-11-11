@@ -48,7 +48,7 @@
   You can also check the <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">official opening hours</a>.</p>
 </noscript>
 
-<h2>📚 Where can I study right now?</h2>
+<h2>Where can I study right now?</h2>
 <div id="study"></div>
 
 <h2>All buildings</h2>
@@ -66,12 +66,12 @@
 
 <h2>Good to know</h2>
 <ul>
-  <li>Tap ☆ next to a name to pin it to the top. Use 📤 Share to send a link to exactly that building.</li>
+  <li>Tap ☆ next to a name to pin it to the top. With Share you can send someone a link to that building.</li>
   <li>Times are Dutch time (Europe/Amsterdam). The page updates itself every 30 seconds.</li>
   <li>⚠️ means a building closes within 30 minutes.</li>
   <li>Hours can differ during holidays, the Christmas break, the summer and exam periods.</li>
   <li>Buildings with a reception are only accessible during opening hours. Some buildings need a campus card.</li>
-  <li>Click a building's name to see it on the map.</li>
+  <li>Tap a building's name to see it on the map.</li>
   <li>Hungry? See <a href="food.html">where you can get food right now</a>.</li>
   <li>Tip: add this site to your phone's home screen (browser menu → “Add to Home screen”) to open it like an app.</li>
 </ul>
@@ -99,9 +99,8 @@ function render() {
   renderTable("services-head", "services", window.SERVICES, now, true);
   renderWeather("weather", now);
   renderExam("exam", now);
-  renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "⭐ Your buildings");
+  renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "Your buildings");
 
-  // Big answer
   var withHours = window.BUILDINGS.filter(function (b) { return b.weekdays || b.weekend; });
   var open = withHours.filter(function (b) { return status(b, now).open; });
   var answer = document.getElementById("answer"), summary = document.getElementById("summary");
@@ -112,17 +111,16 @@ function render() {
     answer.textContent = "✅ YES, the campus is open!";
     summary.textContent = open.length + " of " + withHours.length + " buildings are open.";
   } else {
-    answer.textContent = "🟡 PARTLY, only some buildings are open.";
+    answer.textContent = "PARTLY, only some buildings are open.";
     summary.textContent = "Open now: " + open.map(function (b) { return b.name; }).join(", ") + ".";
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "⚠️ NOT SURE: it's " + hol + ".";
-    summary.textContent = "Hours may differ today. The tables below show the normal hours.";
+    answer.textContent = "NOT SURE, it's " + hol + ".";
+    summary.textContent = "Hours may be different today. The tables below show the normal hours.";
   }
   document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 
-  // Where to study
   var box = document.getElementById("study");
   box.replaceChildren();
   var study = window.BUILDINGS.filter(function (b) { return b.study; });
@@ -148,7 +146,7 @@ function render() {
 document.getElementById("checked").textContent = checkedText();
 keepFresh(render);
 </script>
-<!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->
+<!-- goatcounter -->
 <script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
