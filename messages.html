@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student message board – Is the TU/e open?</title>
+</head>
+<body>
+<nav>
+  <a href="index.html">Is it open?</a> |
+  <a href="messages.html">Student message board</a>
+</nav>
+<hr>
+
+<h1>Student message board</h1>
+<p>Leave a message for other TU/e students: a study tip, a lost-and-found note, or just a drawing. Messages show up here once they have been approved.</p>
+
+<form id="form" onsubmit="return false">
+  <fieldset>
+    <legend>Write a message</legend>
+    <p><label>Your name<br><input id="name" maxlength="50" required></label></p>
+    <p><label>Message<br><textarea id="text" rows="4" cols="40" maxlength="1000" required></textarea></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Draw something (optional)</legend>
+    <p><small>Hold down the mouse button (or your finger) in the yellow box and move to draw.</small></p>
+    <canvas id="canvas" width="400" height="300">Your browser can't show the drawing area.</canvas>
+    <p>
+      <label>Colour <input type="color" id="color" value="#000000"></label>
+      <label>Brush size <input type="range" id="size" min="1" max="30" value="4"></label>
+      <label><input type="checkbox" id="eraser"> Eraser</label>
+      <button type="button" id="clear">Clear drawing</button>
+    </p>
+  </fieldset>
+
+  <p><button type="submit" id="send">Send message</button> <span id="status" role="status"></span></p>
+</form>
+
+<hr>
+<h2>Messages</h2>
+<div id="messages"><p>Loading messages…</p></div>
+<hr>
+<footer><p><small>Unofficial student project, not affiliated with TU/e. Please be kind: no personal info about others, no spam. Visits are counted anonymously, without cookies. · <a href="admin.html">Admin login</a></small></p></footer>
+
+<script>
+// Shows a message if the Firebase code fails to load, instead of doing nothing.
+window.addEventListener("error", function (e) {
+  var s = document.getElementById("status");
+  if (s) s.textContent = "Something failed to load: " + (e.message || (e.target && e.target.src) || "unknown error") + ". Try opening the online (GitHub Pages) version.";
+}, true);
+setTimeout(function () {
+  var s = document.getElementById("status");
+  if (!window.pageReady && s && !s.textContent) s.textContent = "The page's code didn't start. Try the online (GitHub Pages) version, or another browser.";
+}, 8000);
+</script>
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const $ = (id) => document.getElementById(id);
+const statusEl = $("status");
+const box = $("messages");
+
+if (!window.FIREBASE_CONFIG || String(window.FIREBASE_CONFIG.apiKey).startsWith("PASTE")) {
+  box.replaceChildren(text("p", "Setup not finished: paste your Firebase config into firebase-config.js."));
+  throw new Error("Firebase config missing");
+}
+
+const db = getFirestore(initializeApp(window.FIREBASE_CONFIG));
+
+/* ---------- Drawing area ---------- */
+const canvas = $("canvas");
+canvas.width = Math.min(400, window.innerWidth - 40); // fit small phone screens
+const ctx = canvas.getContext("2d");
+const PAPER = "#fff6cc"; // light yellow so you can see where to draw
+let drawing = false, hasDrawing = false, last = null;
+
+function clearCanvas() {
+  ctx.fillStyle = PAPER;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  hasDrawing = false;
+}
+clearCanvas();
+
+function pointFrom(e) {
+  const r = canvas.getBoundingClientRect();
+  const p = e.touches ? e.touches[0] : e;
+  return { x: (p.clientX - r.left) * canvas.width / r.width,
+           y: (p.clientY - r.top) * canvas.height / r.height };
+}
+function setBrush() {
+  const c = $("eraser").checked ? PAPER : $("color").value;
+  ctx.strokeStyle = c; ctx.fillStyle = c;
+  ctx.lineWidth = $("size").value; ctx.lineCap = "round"; ctx.lineJoin = "round";
+}
+function dot(p) {
+  setBrush(); ctx.beginPath(); ctx.arc(p.x, p.y, $("size").value / 2, 0, Math.PI * 2); ctx.fill();
+  hasDrawing = true;
+}
+function line(a, b) {
+  setBrush(); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  hasDrawing = true;
+}
+function start(e) { e.preventDefault(); drawing = true; last = pointFrom(e); dot(last); }
+function move(e) { if (!drawing) return; e.preventDefault(); const p = pointFrom(e); line(last, p); last = p; }
+function end() { drawing = false; }
+
+canvas.addEventListener("mousedown", start);
+window.addEventListener("mousemove", move);
+window.addEventListener("mouseup", end);
+canvas.addEventListener("touchstart", start, { passive: false });
+canvas.addEventListener("touchmove", move, { passive: false });
+canvas.addEventListener("touchend", end);
+$("clear").addEventListener("click", clearCanvas);
+
+/* ---------- Sending a message ---------- */
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {
+    name: $("name").value.trim(),
+    text: $("text").value.trim(),
+    status: "pending",
+    createdAt: serverTimestamp()
+  };
+  if (!data.name || !data.text) { statusEl.textContent = "Please fill in your name and a message."; return; }
+  if (hasDrawing) {
+    const url = canvas.toDataURL("image/png");
+    if (url.length > 500000) { statusEl.textContent = "That drawing is too detailed to send. Try simplifying it."; return; }
+    data.drawing = url;
+  }
+
+  $("send").disabled = true;
+  statusEl.textContent = "Sending…";
+  try {
+    await addDoc(collection(db, "messages"), data);
+    $("form").reset();
+    clearCanvas();
+    statusEl.textContent = "Thanks! Your message will appear after it has been approved.";
+    setTimeout(() => { $("send").disabled = false; }, 20000); // small pause against spamming
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = "Sorry, sending failed. Please try again.";
+    $("send").disabled = false;
+  }
+});
+
+/* ---------- Showing approved messages ---------- */
+const approved = query(collection(db, "messages"), where("status", "==", "approved"));
+onSnapshot(approved, (snap) => {
+  const list = snap.docs.map((d) => d.data()).sort(newestFirst);
+  box.replaceChildren();
+  if (list.length === 0) { box.append(text("p", "No messages yet. Be the first!")); return; }
+  for (const m of list) box.append(renderMessage(m));
+}, (err) => {
+  console.error(err);
+  box.replaceChildren(text("p", "Couldn't load the messages right now."));
+});
+
+function newestFirst(a, b) {
+  return (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0);
+}
+function text(tag, s) { const el = document.createElement(tag); el.textContent = s; return el; }
+function renderMessage(m) {
+  const art = document.createElement("article");
+  art.append(text("h3", m.name || "Someone"));
+  const p = document.createElement("p");
+  String(m.text || "").split("\n").forEach((line, i) => { if (i) p.append(document.createElement("br")); p.append(line); });
+  art.append(p);
+  if (typeof m.drawing === "string" && m.drawing.startsWith("data:image/png;base64,")) {
+    const img = document.createElement("img");
+    img.src = m.drawing; img.alt = "Drawing by " + (m.name || "someone");
+    art.append(img);
+  }
+  if (m.createdAt?.toDate) {
+    const info = document.createElement("p");
+    info.append(text("small", m.createdAt.toDate().toLocaleString()));
+    art.append(info);
+  }
+  art.append(document.createElement("hr"));
+  return art;
+}
+window.pageReady = true;
+</script>
+<!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
