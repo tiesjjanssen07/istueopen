@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can I get food on campus? – Is the TU/e open?</title>
+<meta name="description" content="Which TU/e canteens, coffee bars and cafés are open right now?">
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Is it open?</a> |
+  <a href="food.html">Food</a> |
+  <a href="messages.html">Message board</a>
+</nav>
+<hr>
+
+<div id="banner" hidden></div>
+
+<h1>Can I get food on campus right now?</h1>
+<h2 id="answer">Checking…</h2>
+<p id="summary"></p>
+<p id="clock"></p>
+
+<noscript>
+  <p><b>Turn on JavaScript to see what's open right now.</b>
+  You can also check the <a href="https://www.tue.nl/en/our-university/about-the-university/facilities/catering">official TU/e food outlets page</a>.</p>
+</noscript>
+
+<h2>All places to eat and drink</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead id="head"></thead>
+  <tbody id="food"></tbody>
+</table>
+
+<h2>Good to know</h2>
+<ul>
+  <li>Canteens are mostly open around lunch on weekdays. In the evening and at weekends, Hubble is usually your best bet.</li>
+  <li>TU/e doesn't list weekend hours for the canteens, so they are shown as closed at weekends.</li>
+  <li>Hours often change during holidays, the summer and exam weeks (sometimes with extra dinner options).</li>
+</ul>
+
+<hr>
+<footer>
+  <p><small>
+    <b>Unofficial student project, not made by or affiliated with TU/e.</b>
+    Hours last checked: <span id="checked"></span>, taken from the
+    <a href="https://www.tue.nl/en/our-university/about-the-university/facilities/catering">official TU/e food outlets page</a>.
+    When in doubt, trust the official page.
+    This site counts visits anonymously with GoatCounter, without cookies.
+  </small></p>
+</footer>
+
+<script src="hours.js"></script>
+<script src="open.js"></script>
+<script>
+function render() {
+  var now = amsterdamNow();
+  renderBanner("banner", now);
+  renderTable("head", "food", window.FOOD, now, true);
+
+  var known = window.FOOD.filter(function (f) { return !f.unknown; });
+  var open = known.filter(function (f) { return status(f, now).open; });
+  var answer = document.getElementById("answer"), summary = document.getElementById("summary");
+  if (open.length === 0) {
+    answer.textContent = "❌ NO, everything with known hours is closed.";
+    summary.textContent = "Check the table for the next opening. The Student Sports Café is open 7 days a week (hours on its website).";
+  } else {
+    answer.textContent = "✅ YES, " + open.length + (open.length === 1 ? " place is" : " places are") + " open.";
+    summary.textContent = "Open now: " + open.map(function (f) {
+      return f.name + (f.building ? " (" + f.building + ")" : "");
+    }).join(", ") + ".";
+  }
+  document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
+}
+
+document.getElementById("checked").textContent = window.HOURS_CHECKED || "unknown";
+keepFresh(render);
+</script>
+<!-- Anonymous visitor counter (GoatCounter): no cookies, no personal data -->
+<script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
