@@ -40,7 +40,7 @@ window.BUILDINGS = [
 window.SERVICES = [
   { name: "Library", building: "MetaForum", weekdays: "08:00-22:00", weekend: "10:00-21:00",
     mapQuery: "TU/e Library MetaForum Eindhoven",
-    note: "TU/e ID card needed during exam weeks (18–31 Jan 2027)", noteNl: "TU/e-kaart nodig in tentamenweken (18–31 jan 2027)" },
+    note: "TU/e ID card needed during exam weeks (18–31 Jan 2027)", noteNl: "TU/e-kaart nodig in tentamenweken" },
   // Source: https://ssceindhoven.tue.nl (opening hours SSC)
   { name: "Student Sports Centre", building: "Sports Centre", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
     mapQuery: "Student Sports Centre Eindhoven", note: "Exercising until 23:00 on weekdays", noteNl: "Sporten tot 23:00 op doordeweekse dagen" }
