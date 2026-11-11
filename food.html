@@ -38,6 +38,8 @@
 <h2 id="answer">Checking…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
+<hr>
+<div id="mine" hidden></div>
 
 <noscript>
   <p><b>Turn on JavaScript to see what's open right now.</b>
@@ -52,6 +54,7 @@
 
 <h2>Good to know</h2>
 <ul>
+  <li>Tap ☆ next to a name to pin it to the top.</li>
   <li>Canteens are mostly open around lunch on weekdays. In the evening and at weekends, Hubble is usually your best bet.</li>
   <li>Click a name to see it on the map.</li>
   <li>TU/e doesn't list weekend hours for the canteens, so they are shown as closed at weekends.</li>
@@ -67,6 +70,7 @@
     <a href="https://www.tue.nl/en/our-university/about-the-university/facilities/catering">official TU/e food outlets page</a>.
     When in doubt, trust the official page.
     <a href="report.html">Spotted wrong hours? Let me know.</a>
+    <a href="privacy.html">Privacy</a>.
     This site counts visits anonymously with GoatCounter, without cookies.
   </small></p>
 </footer>
@@ -78,6 +82,7 @@ function render() {
   var now = amsterdamNow();
   renderBanner("banner", now);
   renderTable("head", "food", window.FOOD, now, true);
+  renderMine("mine", window.FOOD, now, "⭐ Your places");
 
   var known = window.FOOD.filter(function (f) { return !f.unknown; });
   var open = known.filter(function (f) { return status(f, now).open; });

@@ -38,6 +38,8 @@
 <h2 id="answer">Even kijken…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
+<hr>
+<div id="mine" hidden></div>
 
 <noscript>
   <p><b>Zet JavaScript aan om te zien wat er nu open is.</b>
@@ -52,6 +54,7 @@
 
 <h2>Goed om te weten</h2>
 <ul>
+  <li>Tik op ☆ naast een naam om die bovenaan vast te zetten.</li>
   <li>Kantines zijn vooral doordeweeks rond lunchtijd open. 's Avonds en in het weekend is Hubble meestal je beste optie.</li>
   <li>Klik op een naam om de plek op de kaart te zien.</li>
   <li>De TU/e noemt geen weekendtijden voor de kantines, dus die staan in het weekend als gesloten.</li>
@@ -67,6 +70,7 @@
     <a href="https://www.tue.nl/universiteit/over-de-universiteit/faciliteiten/catering">officiële cateringpagina van de TU/e</a>.
     Twijfel je? Dan geldt de officiële pagina.
     <a href="melden.html">Klopt een tijd niet? Laat het me weten.</a>
+    <a href="privacy.html">Privacy</a>.
     Deze site telt bezoeken anoniem met GoatCounter, zonder cookies.
   </small></p>
 </footer>
@@ -78,6 +82,7 @@ function render() {
   var now = amsterdamNow();
   renderBanner("banner", now);
   renderTable("head", "food", window.FOOD, now, true);
+  renderMine("mine", window.FOOD, now, "⭐ Jouw plekken");
 
   var known = window.FOOD.filter(function (f) { return !f.unknown; });
   var open = known.filter(function (f) { return status(f, now).open; });

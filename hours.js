@@ -79,6 +79,26 @@ window.WARNING_DAYS = {
   "12-31": { name: "the Christmas break", nameNl: "kerstvakantie" }
 };
 
+// One-off warning days for a specific year can be written as "YYYY-MM-DD".
+// From the TU/e academic calendar 2026-2027:
+window.WARNING_DAYS["2027-04-26"] = { name: "a TU/e bridge day", nameNl: "een brugdag van de TU/e" };
+window.WARNING_DAYS["2027-05-07"] = { name: "a TU/e bridge day", nameNl: "een brugdag van de TU/e" };
+
+// ------------------------------------------------------------
+// EXAM PERIODS: shown as a countdown at the top of the home page.
+// Source: TU/e academic calendar 2026-2027. Add next year's periods when the new calendar is out.
+// ------------------------------------------------------------
+window.EXAM_PERIODS = [
+  { start: "2026-10-26", end: "2026-11-07" },  // Quarter 1
+  { start: "2027-01-18", end: "2027-01-30" },  // Quarter 2
+  { start: "2027-04-05", end: "2027-04-17" },  // Quarter 3
+  { start: "2027-06-21", end: "2027-07-03" },  // Quarter 4
+  { start: "2027-08-16", end: "2027-08-21" }   // Interim period
+];
+
+// Campus location for the rain forecast (Open-Meteo).
+window.CAMPUS = { lat: 51.4478, lon: 5.4900 };
+
 // ------------------------------------------------------------
 // SPECIAL DAYS (optional): days where you know the EXACT hours. Empty for now.
 // Key = date "YYYY-MM-DD". Each day can have:

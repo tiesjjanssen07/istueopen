@@ -147,7 +147,11 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
   items.forEach(function (b) {
     var s = status(b, now), today = hoursOn(b, now.date, now.day);
     var tr = el("tr");
-    var th = el("th"); th.scope = "row"; th.append(mapLink(b)); tr.append(th);
+    var th = el("th"); th.scope = "row";
+    var name = mapLink(b);
+    if (linkedName() === b.name) { var mk = el("mark"); mk.append("👉 ", name); th.append(mk); } else th.append(name);
+    th.append(" ", starButton(b));
+    tr.append(th);
     if (narrow) {
       var small = el("small");
       if (withBuilding && b.building) small.append(el("br"), b.building);
@@ -195,7 +199,7 @@ function holidayOn(dateStr) {
   list[year + "-12-25"] = ["Christmas Day", "Eerste Kerstdag"];
   list[year + "-12-26"] = ["Boxing Day", "Tweede Kerstdag"];
   if (list[dateStr]) return list[dateStr][NL ? 1 : 0];
-  var extra = window.WARNING_DAYS && window.WARNING_DAYS[md];
+  var extra = window.WARNING_DAYS && (window.WARNING_DAYS[dateStr] || window.WARNING_DAYS[md]);
   return extra ? ((NL && extra.nameNl) || extra.name) : null;
 }
 // Holiday name if today needs an "hours may differ" warning (not when exact special hours are set).
@@ -235,6 +239,7 @@ function renderBanner(id, now) {
 
 // Re-run a render function every 30 s, when a phone is rotated, and when you come back to the tab.
 function keepFresh(render) {
+  window.rerender = render;
   render();
   setInterval(render, 30000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
@@ -242,4 +247,172 @@ function keepFresh(render) {
   window.addEventListener("resize", function () {
     if ((window.innerWidth < 600) !== lastNarrow) { lastNarrow = !lastNarrow; render(); }
   });
+}
+
+
+// ====================================================================
+// ⭐ Favourites ("my buildings"), remembered in this browser only.
+// ====================================================================
+var FAV_KEY = "istueopen-favourites";
+function favs() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch (e) { return []; }
+}
+function isFav(name) { return favs().indexOf(name) !== -1; }
+function toggleFav(name) {
+  var f = favs(), i = f.indexOf(name);
+  if (i === -1) f.push(name); else f.splice(i, 1);
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch (e) {}
+  if (window.rerender) window.rerender();
+}
+function starButton(b) {
+  var on = isFav(b.name), btn = el("button", on ? "⭐" : "☆");
+  btn.type = "button";
+  btn.title = on ? t("Remove from your list", "Verwijderen uit je lijst") : t("Pin to the top", "Bovenaan vastzetten");
+  btn.setAttribute("aria-label", btn.title + ": " + b.name);
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+  btn.addEventListener("click", function () { toggleFav(b.name); });
+  return btn;
+}
+
+// ====================================================================
+// 🔗 Links to one place: ?b=Flux highlights Flux and puts it at the top.
+// ====================================================================
+function linkedName() {
+  var wanted;
+  try { wanted = new URLSearchParams(location.search).get("b"); } catch (e) { return null; }
+  if (!wanted) return null;
+  var all = [].concat(window.BUILDINGS || [], window.SERVICES || [], window.FOOD || []);
+  for (var i = 0; i < all.length; i++) if (all[i].name.toLowerCase() === wanted.toLowerCase()) return all[i].name;
+  return null;
+}
+function shareButton(b) {
+  var btn = el("button", t("📤 Share", "📤 Delen"));
+  btn.type = "button";
+  btn.addEventListener("click", function () {
+    var url = location.origin + location.pathname + "?b=" + encodeURIComponent(b.name);
+    var text = t("Is " + b.name + " open right now?", "Is " + b.name + " nu open?");
+    function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = t("📤 Share", "📤 Delen"); }, 2500); }
+    if (navigator.share) {
+      navigator.share({ title: text, text: text, url: url }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function () { done(t("✅ Link copied!", "✅ Link gekopieerd!")); },
+                                             function () { done(url); });
+    } else done(url);
+  });
+  return btn;
+}
+
+// ====================================================================
+// ➡️ Where to go next: another place from the same list that stays open longer.
+// ====================================================================
+function nextPlace(b, items, now) {
+  var s = status(b, now);
+  if (!s.open) return null;
+  var pool = items.filter(function (x) { return x !== b && (!b.study || x.study); });
+  var best = null, bestUntil = s.until;
+  pool.forEach(function (x) {
+    var sx = status(x, now);
+    if (sx.open && sx.until > bestUntil) { best = x; bestUntil = sx.until; }
+  });
+  return best ? { place: best, until: bestUntil } : null;
+}
+// Text like "→ then: MetaForum (until 22:00)" when b closes within the hour.
+function nextText(b, items, now) {
+  var s = status(b, now);
+  if (!s.open || s.until - now.minutes > 60) return "";
+  var n = nextPlace(b, items, now);
+  if (n) return t(" → then: ", " → daarna: ") + n.place.name + t(" (until ", " (tot ") + fmt(n.until) + ")";
+  return t(" → nothing similar is open later", " → daarna is er niets vergelijkbaars meer open");
+}
+
+// The "⭐ Your buildings" box: favourites plus the linked place.
+function renderMine(boxId, items, now, title) {
+  var box = document.getElementById(boxId);
+  box.replaceChildren();
+  var names = favs().slice(), linked = linkedName();
+  if (linked && names.indexOf(linked) === -1) names.unshift(linked);
+  var mine = names.map(function (n) { return items.filter(function (x) { return x.name === n; })[0]; }).filter(Boolean);
+  if (!mine.length) { box.hidden = true; return; }
+  box.hidden = false;
+  box.append(el("h2", title));
+  var ul = el("ul");
+  mine.forEach(function (b) {
+    var s = status(b, now), li = el("li");
+    var label = el("b"); label.append(mapLink(b)); li.append(label, ": ");
+    if (s.open) li.append(el("b", s.text)); else li.append(s.text);
+    var nt = nextText(b, items, now);
+    if (nt) li.append(el("br"), nt);
+    li.append(el("br"), shareButton(b), " ");
+    if (isFav(b.name)) li.append(starButton(b));
+    else { var save = el("button", t("⭐ Save", "⭐ Bewaren")); save.type = "button";
+           save.addEventListener("click", function () { toggleFav(b.name); }); li.append(save); }
+    ul.append(li);
+  });
+  box.append(ul, el("hr"));
+}
+
+// ====================================================================
+// 📚 Exam-period countdown (dates in hours.js, from the TU/e academic calendar).
+// ====================================================================
+function daysBetween(a, b) { return Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / 86400000); }
+function renderExam(id, now) {
+  var box = document.getElementById(id);
+  box.replaceChildren(); box.hidden = true;
+  var periods = window.EXAM_PERIODS || [];
+  for (var i = 0; i < periods.length; i++) {
+    var p = periods[i], untilStart = daysBetween(now.date, p.start), untilEnd = daysBetween(now.date, p.end);
+    if (untilStart <= 0 && untilEnd >= 0) {
+      box.append(el("b", t("📚 It's exam period", "📚 Het is tentamenperiode")),
+        t(" (until " + prettyDate(p.end) + "). Good luck! Flux and Neuron are usually open at weekends from 10:00 to 21:00 during exams; check TU/e's announcements.",
+          " (tot " + prettyDate(p.end) + "). Succes! Flux en Neuron zijn in tentamenperiodes meestal ook in het weekend open van 10:00 tot 21:00; check de aankondigingen van de TU/e."));
+      box.hidden = false; return;
+    }
+    if (untilStart > 0 && untilStart <= 21) {
+      box.append(el("b", t("📚 Exam period starts in " + untilStart + (untilStart === 1 ? " day" : " days"),
+                           "📚 Tentamenperiode begint over " + untilStart + (untilStart === 1 ? " dag" : " dagen"))),
+        " (" + prettyDate(p.start) + " – " + prettyDate(p.end) + ").");
+      box.hidden = false; return;
+    }
+  }
+}
+
+// ====================================================================
+// 🌧️ Rain warning for cycling (Open-Meteo, free, no account; fetched every 15 min).
+// ====================================================================
+var weatherCache = null, weatherFetched = 0;
+function renderWeather(id, now) {
+  var box = document.getElementById(id);
+  if (!window.fetch || !window.CAMPUS) return;
+  if (weatherCache) drawWeather(box, weatherCache, now);
+  if (Date.now() - weatherFetched < 15 * 60000) return;
+  weatherFetched = Date.now();
+  var url = "https://api.open-meteo.com/v1/forecast?latitude=" + window.CAMPUS.lat + "&longitude=" + window.CAMPUS.lon +
+            "&hourly=precipitation,precipitation_probability&timezone=Europe%2FAmsterdam&forecast_days=2";
+  fetch(url).then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) { if (data && data.hourly) { weatherCache = data.hourly; drawWeather(box, weatherCache, amsterdamNow()); } })
+    .catch(function () {});
+}
+function drawWeather(box, hourly, now) {
+  var hour = now.date + "T" + now.time.slice(0, 2) + ":00";
+  var i0 = hourly.time.indexOf(hour);
+  if (i0 === -1) { box.hidden = true; return; }
+  function wet(i) { return hourly.precipitation[i] >= 0.2 || (hourly.precipitation_probability[i] >= 70 && hourly.precipitation[i] > 0); }
+  function at(i) { return hourly.time[i].slice(11, 16); }
+  var msg;
+  if (wet(i0)) {
+    var dry = -1;
+    for (var i = i0 + 1; i <= i0 + 6 && i < hourly.time.length; i++) if (!wet(i)) { dry = i; break; }
+    msg = dry !== -1 ? t("🌧️ Rain on campus now, probably dry from about " + at(dry) + ".", "🌧️ Het regent nu op de campus, waarschijnlijk droog vanaf ongeveer " + at(dry) + ".")
+                     : t("🌧️ Rain on campus for the next few hours. Bring a raincoat!", "🌧️ De komende uren regen op de campus. Neem een regenjas mee!");
+  } else {
+    var rain = -1;
+    for (var j = i0 + 1; j <= i0 + 3 && j < hourly.time.length; j++) if (wet(j)) { rain = j; break; }
+    msg = rain !== -1 ? t("🌦️ Rain expected around " + at(rain) + ". Cycle before then if you can.", "🌦️ Rond " + at(rain) + " wordt regen verwacht. Fiets als het kan daarvoor.")
+                      : t("🚲 Dry on campus for the next 3 hours.", "🚲 De komende 3 uur droog op de campus.");
+  }
+  box.replaceChildren();
+  var a = el("a", "Open-Meteo.com"); a.href = "https://open-meteo.com/"; a.target = "_blank"; a.rel = "noopener";
+  var small = el("small"); small.append(" (" + t("weather data: ", "weerdata: "), a, ")");
+  box.append(msg, small);
+  box.hidden = false;
 }

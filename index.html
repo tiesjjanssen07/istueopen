@@ -38,6 +38,10 @@
 <h2 id="answer">Checking…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
+<p id="weather" hidden></p>
+<p id="exam" hidden></p>
+<hr>
+<div id="mine" hidden></div>
 
 <noscript>
   <p><b>Turn on JavaScript to see which buildings are open right now.</b>
@@ -62,6 +66,7 @@
 
 <h2>Good to know</h2>
 <ul>
+  <li>Tap ☆ next to a name to pin it to the top. Use 📤 Share to send a link to exactly that building.</li>
   <li>Times are Dutch time (Europe/Amsterdam). The page updates itself every 30 seconds.</li>
   <li>⚠️ means a building closes within 30 minutes.</li>
   <li>Hours can differ during holidays, the Christmas break, the summer and exam periods.</li>
@@ -79,6 +84,7 @@
     <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">official TU/e opening hours page</a>.
     When in doubt, trust the official page.
     <a href="report.html">Spotted wrong hours? Let me know.</a>
+    <a href="privacy.html">Privacy</a>.
     This site counts visits anonymously with GoatCounter, without cookies.
   </small></p>
 </footer>
@@ -91,6 +97,9 @@ function render() {
   renderBanner("banner", now);
   renderTable("head", "buildings", window.BUILDINGS, now, false);
   renderTable("services-head", "services", window.SERVICES, now, true);
+  renderWeather("weather", now);
+  renderExam("exam", now);
+  renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "⭐ Your buildings");
 
   // Big answer
   var withHours = window.BUILDINGS.filter(function (b) { return b.weekdays || b.weekend; });
@@ -122,7 +131,7 @@ function render() {
   var ul = el("ul");
   if (openStudy.length) {
     openStudy.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^✅ /, "") + (b.note ? " (" + b.note + ")" : ""));
+      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^✅ /, "") + (noteOf(b) ? " (" + noteOf(b) + ")" : "") + nextText(b, study, now));
       ul.append(li);
     });
     box.append(ul);
