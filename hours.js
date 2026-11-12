@@ -53,7 +53,7 @@ window.FOOD = [
   { name: "Gemini canteen",         building: "Gemini",    weekdays: "11:30-13:30", weekend: null },
   { name: "Flux canteen",           building: "Flux",      weekdays: "10:00-14:00", weekend: null },
   { name: "Neuron canteen",         building: "Neuron",    weekdays: "10:00-14:00", weekend: null },
-  { name: "Subway",                 building: "",          weekdays: "10:00-15:00", weekend: null, mapQuery: "Subway TU Eindhoven" },
+  { name: "Subway",                 building: "Auditorium",          weekdays: "10:00-15:00", weekend: null, mapQuery: "Subway TU Eindhoven" },
   { name: "Hubble Community Café",  building: "",          weekdays: "10:30-02:00", weekend: "10:30-02:00", note: "Open every day, also in the evening", noteNl: "Elke dag open, ook 's avonds", mapQuery: "Hubble Community Cafe Eindhoven" },
   { name: "Student Sports Café",    building: "Sports Centre", weekdays: null, weekend: null, unknown: true, note: "Open 7 days a week; hours change weekly (see the SSC website)", noteNl: "7 dagen per week open; tijden wisselen per week (zie de SSC-website)", mapQuery: "Student Sports Centre Eindhoven" }
 ];
