@@ -5,11 +5,17 @@
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #151514; --fg: #ecebe6; --muted: #9a9993; --line: #2c2c2a; --card: #1e1e1d; --accent: #8aa8ff;
     --green: #6fd08c; --greenbg: #16301f; --red: #f08a84; --redbg: #3a1a19; --amber: #f2c35b; --amberbg: #3a2e12;
   }
 }
+:root[data-theme="dark"] {
+    --bg: #151514; --fg: #ecebe6; --muted: #9a9993; --line: #2c2c2a; --card: #1e1e1d; --accent: #8aa8ff;
+    --green: #6fd08c; --greenbg: #16301f; --red: #f08a84; --redbg: #3a1a19; --amber: #f2c35b; --amberbg: #3a2e12;
+    color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
 
 * { box-sizing: border-box; }
 body {
@@ -90,4 +96,19 @@ thead th, td { overflow-wrap: normal; word-break: normal; }
   th, td { padding: 8px 9px !important; }
   thead th { font-size: 11px; letter-spacing: 0; }
   table { font-size: 14px; }
+}
+
+/* theme toggle, back to top, offline note */
+#theme { font-size: 15px; line-height: 1; padding: 7px 10px; border-radius: 999px; background: var(--card); margin-left: 6px; }
+nav a[hreflang] + #theme { margin-left: 6px; }
+#top {
+  position: fixed; right: 16px; bottom: 16px; width: 44px; height: 44px; border-radius: 999px;
+  font-size: 20px; background: var(--fg); color: var(--bg); border-color: var(--fg);
+  box-shadow: 0 4px 14px rgba(0,0,0,.2); z-index: 5;
+}
+#offline { margin: 12px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--amberbg); color: var(--fg); font-size: 15px; }
+@media (max-width: 360px) {
+  nav a { font-size: 14px; padding: 5px 9px; }
+  #theme { font-size: 14px; padding: 6px 8px; }
+  nav { gap: 4px; }
 }
