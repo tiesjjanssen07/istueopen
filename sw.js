@@ -1,9 +1,9 @@
 // keeps a copy of the site so it also opens without internet.
 // always tries the network first, so updates show up straight away when online.
-var CACHE = "istueopen-v1";
+var CACHE = "istueopen-v2";
 var FILES = [
-  "./", "index.html", "food.html", "report.html", "privacy.html", "404.html",
-  "nl/", "nl/index.html", "nl/eten.html", "nl/melden.html", "nl/privacy.html",
+  "./", "food", "report", "privacy", "404.html",
+  "nl/", "nl/eten", "nl/melden", "nl/privacy",
   "style.css", "hours.js", "open.js", "site.js", "favicon.png", "icon-192.png", "manifest.webmanifest", "nl/manifest.webmanifest"
 ];
 
@@ -28,7 +28,7 @@ self.addEventListener("fetch", function (e) {
       return res;
     }).catch(function () {
       return caches.match(req, { ignoreSearch: true }).then(function (hit) {
-        return hit || (req.mode === "navigate" ? caches.match("index.html") : Response.error());
+        return hit || (req.mode === "navigate" ? caches.match("./") : Response.error());
       });
     })
   );

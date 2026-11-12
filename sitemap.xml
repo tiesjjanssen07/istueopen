@@ -15,16 +15,16 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://istueopen.nl/food.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://istueopen.nl/food.html"/>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten.html"/>
+    <loc>https://istueopen.nl/food</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://istueopen.nl/food"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten"/>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://istueopen.nl/nl/eten.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://istueopen.nl/food.html"/>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten.html"/>
+    <loc>https://istueopen.nl/nl/eten</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://istueopen.nl/food"/>
+    <xhtml:link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten"/>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
