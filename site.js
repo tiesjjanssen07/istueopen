@@ -1,6 +1,13 @@
 // small things used on every page: theme toggle, back to top, offline support, language choice
 
 // set the saved theme right away, so the page doesn't flash
+// show short addresses: /index.html -> /, /food.html -> /food
+(function () {
+  if (location.protocol === "file:" || !window.history || !history.replaceState) return;
+  var p = location.pathname, clean = p.replace(/index\.html$/, "").replace(/\.html$/, "");
+  if (clean !== p && !/\/404$/.test(clean)) history.replaceState(null, "", clean + location.search + location.hash);
+})();
+
 (function () {
   try { var th = localStorage.getItem("istueopen-theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
 })();
