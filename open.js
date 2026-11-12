@@ -123,6 +123,15 @@ function status(b, now) {
   return { open: false, text: t("❌ Closed", "❌ Gesloten") };
 }
 
+function statusClass(s) { return s.open ? (s.soon ? "soon" : "open") : (s.unknown ? "unknown" : "closed"); }
+// colour of the big answer box
+function markAnswer() {
+  var a = document.getElementById("answer");
+  if (!a) return;
+  var c = a.textContent.charAt(0);
+  a.className = c === "✅" ? "yes" : c === "❌" ? "no" : "warn";
+}
+
 function el(tag, text) { var e = document.createElement(tag); if (text != null) e.textContent = text; return e; }
 
 // phones get fewer columns
@@ -154,6 +163,7 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
       th.append(small);
     }
     var now_td = el("td");
+    now_td.className = statusClass(s);
     if (s.open) now_td.append(el("b", s.text)); else now_td.textContent = s.text;
     tr.append(now_td);
     tr.append(el("td", b.unknown ? "?" : dash(today.range) + (today.label ? " (" + today.label + ")" : "")));
@@ -180,17 +190,17 @@ function holidayOn(dateStr) {
   // king's day moves to the 26th if the 27th is a sunday
   var kings = new Date(year + "-04-27T12:00:00Z").getUTCDay() === 0 ? "04-26" : "04-27";
   var list = {};
-  list[year + "-01-01"] = ["New Year's Day", "Nieuwjaarsdag"];
+  list[year + "-01-01"] = ["New Year's Day", "nieuwjaarsdag"];
   list[addDays(easter, -2)] = ["Good Friday", "Goede Vrijdag"];
-  list[easter] = ["Easter Sunday", "Eerste Paasdag"];
-  list[addDays(easter, 1)] = ["Easter Monday", "Tweede Paasdag"];
+  list[easter] = ["Easter Sunday", "eerste paasdag"];
+  list[addDays(easter, 1)] = ["Easter Monday", "tweede paasdag"];
   list[year + "-" + kings] = ["King's Day", "Koningsdag"];
   list[year + "-05-05"] = ["Liberation Day", "Bevrijdingsdag"];
   list[addDays(easter, 39)] = ["Ascension Day", "Hemelvaartsdag"];
-  list[addDays(easter, 49)] = ["Whit Sunday", "Eerste Pinksterdag"];
-  list[addDays(easter, 50)] = ["Whit Monday", "Tweede Pinksterdag"];
-  list[year + "-12-25"] = ["Christmas Day", "Eerste Kerstdag"];
-  list[year + "-12-26"] = ["Boxing Day", "Tweede Kerstdag"];
+  list[addDays(easter, 49)] = ["Whit Sunday", "eerste pinksterdag"];
+  list[addDays(easter, 50)] = ["Whit Monday", "tweede pinksterdag"];
+  list[year + "-12-25"] = ["Christmas Day", "eerste kerstdag"];
+  list[year + "-12-26"] = ["Boxing Day", "tweede kerstdag"];
   if (list[dateStr]) return list[dateStr][NL ? 1 : 0];
   var extra = window.WARNING_DAYS && (window.WARNING_DAYS[dateStr] || window.WARNING_DAYS[md]);
   return extra ? ((NL && extra.nameNl) || extra.name) : null;
@@ -227,7 +237,8 @@ function renderBanner(id, now) {
   box.append(p, el("hr"));
 }
 
-function keepFresh(render) {
+function keepFresh(draw) {
+  function render() { draw(); markAnswer(); }
   window.rerender = render;
   render();
   setInterval(render, 30000);
@@ -249,6 +260,8 @@ function toggleFav(name) {
   if (i === -1) f.push(name); else f.splice(i, 1);
   try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch (e) {}
   if (window.rerender) window.rerender();
+  var stars = document.querySelectorAll("button[data-star]");
+  for (var k = 0; k < stars.length; k++) if (stars[k].getAttribute("data-star") === name) { stars[k].focus(); break; }
 }
 function starButton(b) {
   var on = isFav(b.name), btn = el("button", on ? "⭐" : "☆");
@@ -256,6 +269,7 @@ function starButton(b) {
   btn.title = on ? t("Remove from your list", "Verwijderen uit je lijst") : t("Pin to the top", "Bovenaan vastzetten");
   btn.setAttribute("aria-label", btn.title + ": " + b.name);
   btn.setAttribute("aria-pressed", on ? "true" : "false");
+  btn.setAttribute("data-star", b.name);
   btn.addEventListener("click", function () { toggleFav(b.name); });
   return btn;
 }
@@ -290,7 +304,8 @@ function shareButton(b) {
 function nextPlace(b, items, now) {
   var s = status(b, now);
   if (!s.open) return null;
-  var pool = items.filter(function (x) { return x !== b && (!b.study || x.study); });
+  var hasStudy = items.some(function (x) { return x.study; });
+  var pool = items.filter(function (x) { return x !== b && (!hasStudy || x.study); });
   var best = null, bestUntil = s.until;
   pool.forEach(function (x) {
     var sx = status(x, now);
@@ -319,7 +334,9 @@ function renderMine(boxId, items, now, title) {
   mine.forEach(function (b) {
     var s = status(b, now), li = el("li");
     var label = el("b"); label.append(mapLink(b)); li.append(label, ": ");
-    if (s.open) li.append(el("b", s.text)); else li.append(s.text);
+    var st = el("span"); st.className = statusClass(s);
+    if (s.open) st.append(el("b", s.text)); else st.append(s.text);
+    li.append(st);
     var nt = nextText(b, items, now);
     if (nt) li.append(el("br"), nt);
     li.append(el("br"), shareButton(b), " ");
@@ -342,7 +359,7 @@ function renderExam(id, now) {
     if (untilStart <= 0 && untilEnd >= 0) {
       box.append(el("b", t("It's exam period", "Het is tentamenperiode")),
         t(" (until " + prettyDate(p.end) + "). During exams Flux and Neuron are usually also open at weekends, 10:00–21:00. Keep an eye on TU/e's announcements.",
-          " (tot " + prettyDate(p.end) + "). In tentamenperiodes zijn Flux en Neuron meestal ook in het weekend open, van 10:00 tot 21:00. Houd de aankondigingen van de TU/e in de gaten."));
+          " (t/m " + prettyDate(p.end) + "). In tentamenperiodes zijn Flux en Neuron meestal ook in het weekend open, van 10:00 tot 21:00. Houd de aankondigingen van de TU/e in de gaten."));
       box.hidden = false; return;
     }
     if (untilStart > 0 && untilStart <= 21) {
@@ -372,17 +389,22 @@ function drawWeather(box, hourly, now) {
   var hour = now.date + "T" + now.time.slice(0, 2) + ":00";
   var i0 = hourly.time.indexOf(hour);
   if (i0 === -1) { box.hidden = true; return; }
-  function wet(i) { return hourly.precipitation[i] >= 0.2 || (hourly.precipitation_probability[i] >= 70 && hourly.precipitation[i] > 0); }
-  function at(i) { return hourly.time[i].slice(11, 16); }
-  var msg;
+  // open-meteo values are for the hour before the timestamp, so hour k is stored at k + 1
+  function wet(k) {
+    var mm = hourly.precipitation[k + 1], chance = hourly.precipitation_probability[k + 1];
+    return mm >= 0.2 || (chance >= 70 && mm > 0);
+  }
+  function at(k) { return hourly.time[k].slice(11, 16); }
+  var last = hourly.time.length - 2, msg;
+  if (i0 > last) { box.hidden = true; return; }
   if (wet(i0)) {
     var dry = -1;
-    for (var i = i0 + 1; i <= i0 + 6 && i < hourly.time.length; i++) if (!wet(i)) { dry = i; break; }
+    for (var i = i0 + 1; i <= i0 + 6 && i <= last; i++) if (!wet(i)) { dry = i; break; }
     msg = dry !== -1 ? t("It's raining on campus, probably dry again around " + at(dry) + ".", "Het regent op de campus, rond " + at(dry) + " is het waarschijnlijk weer droog.")
                      : t("Rain on campus for the next few hours, so bring a raincoat.", "De komende uren regen op de campus, dus neem een regenjas mee.");
   } else {
     var rain = -1;
-    for (var j = i0 + 1; j <= i0 + 3 && j < hourly.time.length; j++) if (wet(j)) { rain = j; break; }
+    for (var j = i0 + 1; j <= i0 + 3 && j <= last; j++) if (wet(j)) { rain = j; break; }
     msg = rain !== -1 ? t("Rain expected around " + at(rain) + ", so try to cycle before then.", "Rond " + at(rain) + " wordt regen verwacht, dus fiets als het kan voor die tijd.")
                       : t("Dry on campus for the next 3 hours.", "De komende 3 uur blijft het droog op de campus.");
   }

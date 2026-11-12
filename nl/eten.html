@@ -22,12 +22,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
 <nav>
   <a href="index.html">Is het open?</a> |
-  <a href="eten.html">Eten</a> |
+  <a href="eten.html" aria-current="page">Eten</a> |
   <a href="../food.html" hreflang="en" lang="en">English</a>
 </nav>
 <hr>
@@ -57,8 +58,8 @@
   <li>Tik op ☆ naast een naam om die bovenaan vast te zetten.</li>
   <li>Kantines zijn vooral doordeweeks rond lunchtijd open. 's Avonds en in het weekend is Hubble meestal je beste optie.</li>
   <li>Tik op een naam om de plek op de kaart te zien.</li>
-  <li>De TU/e noemt geen weekendtijden voor de kantines, dus die staan in het weekend als gesloten.</li>
-  <li>Tijden veranderen vaak tijdens vakanties, de zomer en tentamenweken (soms met extra opties voor avondeten).</li>
+  <li>De TU/e noemt geen weekendtijden voor de kantines, dus die staan hier in het weekend op gesloten.</li>
+  <li>In vakanties, in de zomer en in tentamenweken veranderen de tijden vaak (soms kun je dan ook avondeten krijgen).</li>
   <li>Tip: zet deze site op het beginscherm van je telefoon (browsermenu → ‘Toevoegen aan beginscherm’ of ‘Zet op beginscherm’) om hem als app te openen.</li>
 </ul>
 
@@ -98,7 +99,7 @@ function render() {
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "NIET ZEKER, het is " + hol + ".";
+    answer.textContent = "⚠️ NIET ZEKER, het is " + hol + ".";
     summary.textContent = "Vandaag kunnen de tijden anders zijn. In de tabel staan de normale tijden.";
   }
   document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";

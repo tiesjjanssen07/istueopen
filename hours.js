@@ -36,7 +36,7 @@ window.SERVICES = [
   { name: "Library", building: "MetaForum", weekdays: "08:00-22:00", weekend: "10:00-21:00",
     mapQuery: "TU/e Library MetaForum Eindhoven",
     note: "TU/e ID card needed during exam weeks", noteNl: "TU/e-kaart nodig in tentamenweken" },
-  // from https://ssceindhoven.tue.nl
+  // from https://ssceindhoven.tue.nl (faq)
   { name: "Student Sports Centre", building: "Sports Centre", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
     mapQuery: "Student Sports Centre Eindhoven", note: "Exercising until 23:00 on weekdays", noteNl: "Sporten tot 23:00 op doordeweekse dagen" }
 ];
@@ -62,7 +62,7 @@ window.FOOD = [
 // public holidays are added automatically (see open.js), these are extra.
 // "MM-DD" = every year, "YYYY-MM-DD" = only that year
 window.WARNING_DAYS = {
-  "12-24": { name: "Christmas Eve", nameNl: "Kerstavond" },
+  "12-24": { name: "Christmas Eve", nameNl: "kerstavond" },
   "12-27": { name: "the Christmas break", nameNl: "kerstvakantie" },
   "12-28": { name: "the Christmas break", nameNl: "kerstvakantie" },
   "12-29": { name: "the Christmas break", nameNl: "kerstvakantie" },

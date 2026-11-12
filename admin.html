@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Admin – Is the TU/e open?</title>
 <link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -67,7 +68,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 let stopListening = [];
 
-/* ---------- Login / logout ---------- */
 $("login").addEventListener("submit", async (e) => {
   e.preventDefault();
   $("loginStatus").textContent = "Logging in…";
@@ -106,7 +106,6 @@ onAuthStateChanged(auth, (user) => {
   stopListening.push(watchReports());
 });
 
-/* ---------- Message lists ---------- */
 function watchReports() {
   const box = $("reports");
   box.replaceChildren(text("p", "Loading…"));

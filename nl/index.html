@@ -22,11 +22,12 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
 <nav>
-  <a href="index.html">Is het open?</a> |
+  <a href="index.html" aria-current="page">Is het open?</a> |
   <a href="eten.html">Eten</a> |
   <a href="../index.html" hreflang="en" lang="en">English</a>
 </nav>
@@ -69,7 +70,7 @@
   <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met Delen stuur je iemand een link naar dat gebouw.</li>
   <li>Alle tijden zijn in Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
   <li>⚠️ betekent dat een gebouw binnen 30 minuten sluit.</li>
-  <li>Tijden kunnen afwijken tijdens feestdagen, de kerstvakantie, de zomer en tentamenperiodes.</li>
+  <li>Op feestdagen, in de kerstvakantie, in de zomer en in tentamenperiodes kunnen de tijden afwijken.</li>
   <li>Gebouwen met een receptie zijn alleen tijdens openingstijden toegankelijk. Voor sommige gebouwen heb je een campuskaart nodig.</li>
   <li>Tik op de naam van een gebouw om het op de kaart te zien.</li>
   <li>Honger? Kijk <a href="eten.html">waar je nu eten kunt halen</a>.</li>
@@ -111,12 +112,12 @@ function render() {
     answer.textContent = "✅ JA, de campus is open!";
     summary.textContent = open.length + " van de " + withHours.length + " gebouwen zijn open.";
   } else {
-    answer.textContent = "DEELS, alleen een paar gebouwen zijn open.";
+    answer.textContent = "🟡 DEELS, alleen een paar gebouwen zijn open.";
     summary.textContent = "Nu open: " + open.map(function (b) { return b.name; }).join(", ") + ".";
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "NIET ZEKER, het is " + hol + ".";
+    answer.textContent = "⚠️ NIET ZEKER, het is " + hol + ".";
     summary.textContent = "Vandaag kunnen de tijden anders zijn. In de tabellen staan de normale tijden.";
   }
   document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";

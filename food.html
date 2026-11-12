@@ -22,12 +22,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <nav>
   <a href="index.html">Is it open?</a> |
-  <a href="food.html">Food</a> |
+  <a href="food.html" aria-current="page">Food</a> |
   <a href="nl/eten.html" hreflang="nl" lang="nl">Nederlands</a>
 </nav>
 <hr>
@@ -98,7 +99,7 @@ function render() {
   }
   var hol = holidayWarning(now);
   if (hol) {
-    answer.textContent = "NOT SURE, it's " + hol + ".";
+    answer.textContent = "⚠️ NOT SURE, it's " + hol + ".";
     summary.textContent = "Hours may be different today. The table below shows the normal hours.";
   }
   document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
