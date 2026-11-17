@@ -377,7 +377,7 @@ function nextText(b, items, now) {
   if (!s.open || s.until - now.minutes > 60) return "";
   var n = nextPlace(b, items, now);
   if (n) return t(" → then: ", " → daarna: ") + n.place.name + t(" (until ", " (tot ") + fmt(n.until) + ")";
-  return t(" → nothing similar is open later", " → daarna is er niets vergelijkbaars meer open");
+  return "";
 }
 
 function renderMine(boxId, items, now, title) {
