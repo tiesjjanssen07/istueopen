@@ -210,10 +210,10 @@ footer a { color: var(--muted); text-decoration: underline; }
 .card.closed, .card.unknown { border-left-color: var(--line); }
 .card.linked { background: var(--amberbg); }
 .card .main { flex: 1; min-width: 0; }
-.card .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 10px; }
+.card .top { display: block; }
 .card .top b { font-size: 16px; }
 .card .top b a { color: var(--fg); text-decoration: none; }
-.card .st { font-size: 14px; font-weight: 600; }
+.card .st { display: block; font-size: 14px; font-weight: 600; margin-top: 2px; }
 .card.open .st { color: var(--green); }
 .card.soon .st { color: var(--amber); }
 .card.closed .st, .card.unknown .st { color: var(--muted); font-weight: 500; }
