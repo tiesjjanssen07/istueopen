@@ -7,6 +7,7 @@ window.HOURS_CHECKED = "2026-11-11";
 // saturday/sunday can be set separately if they differ
 // note = english, noteNl = dutch
 // mapQuery = what google maps should search for (optional)
+// osm = the building's name on openstreetmap, if it's different (for the campus map)
 window.BUILDINGS = [
   { name: "Atlas",        weekdays: "07:30-20:00", weekend: null },
   { name: "Auditorium",   weekdays: "07:30-20:00", weekend: null },
@@ -37,7 +38,7 @@ window.SERVICES = [
     mapQuery: "TU/e Library MetaForum Eindhoven",
     note: "TU/e ID card needed during exam weeks", noteNl: "TU/e-kaart nodig in tentamenweken" },
   // from https://ssceindhoven.tue.nl (faq)
-  { name: "Student Sports Centre", building: "Sports Centre", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
+  { name: "Student Sports Centre", building: "Sports Centre", osm: "Studentensportcentrum", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
     mapQuery: "Student Sports Centre Eindhoven", note: "Exercising until 23:00 on weekdays", noteNl: "Sporten tot 23:00 op doordeweekse dagen" }
 ];
 
