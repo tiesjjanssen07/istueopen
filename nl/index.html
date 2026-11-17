@@ -111,7 +111,7 @@ function render() {
   var answer = document.getElementById("answer"), summary = document.getElementById("summary");
   if (open.length === 0) {
     answer.textContent = "❌ NEE, alle gebouwen zijn dicht.";
-    summary.textContent = "In de tabel zie je wanneer je gebouw weer opengaat.";
+    summary.textContent = "In de lijst hieronder zie je wanneer je gebouw weer opengaat.";
   } else if (open.length >= withHours.length - 1) {
     answer.textContent = "✅ JA, de campus is open!";
     summary.textContent = open.length + " van de " + withHours.length + " gebouwen zijn open.";
@@ -122,7 +122,7 @@ function render() {
   var hol = holidayWarning(now);
   if (hol) {
     answer.textContent = "⚠️ NIET ZEKER, het is " + hol + ".";
-    summary.textContent = "Vandaag kunnen de tijden anders zijn. In de tabellen staan de normale tijden.";
+    summary.textContent = "Vandaag kunnen de tijden anders zijn. In de lijsten hieronder staan de normale tijden.";
   }
   document.getElementById("clock").textContent = "Het is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 

@@ -137,16 +137,23 @@ function markAnswer() {
 
 function el(tag, text) { var e = document.createElement(tag); if (text != null) e.textContent = text; return e; }
 
-// phones get fewer columns
+// desktop gets the full table, phones get cards with filters
+var filters = {};
 function renderTable(headId, bodyId, items, now, withBuilding) {
   var narrow = window.innerWidth < 700;
   var head = document.getElementById(headId), body = document.getElementById(bodyId);
+  var table = head.parentNode;
   head.replaceChildren(); body.replaceChildren();
+  var box = document.getElementById(bodyId + "-cards");
+  if (!box) {
+    box = el("div"); box.id = bodyId + "-cards"; box.className = "cardbox";
+    table.parentNode.insertBefore(box, table.nextSibling);
+  }
+  box.replaceChildren();
+  table.hidden = narrow; box.hidden = !narrow;
+  if (narrow) return renderCards(box, bodyId, items, now, withBuilding);
 
-  // phones: two columns, the week's hours go under the name
-  var cols = narrow ? [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu")]
-                    : [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu"), t("Today", "Vandaag")];
-  if (!narrow) cols.push(t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo"));
+  var cols = [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu"), t("Today", "Vandaag"), t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo")];
   var hr = el("tr");
   cols.forEach(function (c) { var th = el("th", c); th.scope = "col"; hr.append(th); });
   head.append(hr);
@@ -160,31 +167,60 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
     line.append(mapLink(b), starButton(b));
     th.append(line);
     tr.append(th);
-    // under the name: building, the week's hours (phones only) and the note
-    var meta = el("span"); meta.className = "meta";
-    var bits = [];
-    if (withBuilding && b.building) bits.push(b.building);
-    if (narrow && !b.unknown) {
-      bits.push(t("Mon–Fri ", "ma–vr ") + dash(b.weekdays));
-      if (b.saturday !== undefined || b.sunday !== undefined) weekendText(b).split(", ").forEach(function (x) { bits.push(x); });
-      else bits.push(t("Sat–Sun ", "za–zo ") + weekendText(b));
-    }
-    bits.forEach(function (x, i) { if (i) meta.append(" · "); var sp = el("span", x); sp.className = "nw"; meta.append(sp); });
-    if (bits.length) th.append(meta);
+    if (withBuilding && b.building) { var meta = el("span", b.building); meta.className = "meta"; th.append(meta); }
     if (noteOf(b)) { var note = el("span", noteOf(b)); note.className = "note"; th.append(note); }
     var now_td = el("td");
     now_td.className = "status " + statusClass(s);
     if (s.open) now_td.append(el("b", s.text)); else now_td.textContent = s.text;
     tr.append(now_td);
-    if (!narrow) {
-      var td0 = el("td", b.unknown ? "?" : dash(today.range) + (today.label ? " (" + today.label + ")" : "")); td0.className = "time"; tr.append(td0);
-      var td1 = el("td", b.unknown ? "?" : dash(b.weekdays)); td1.className = "time"; tr.append(td1);
-      var td2 = el("td"); td2.className = "time";
-      (b.unknown ? "?" : weekendText(b)).split(", ").forEach(function (x, i) { if (i) td2.append(el("br")); td2.append(x); });
-      tr.append(td2);
-    }
+    var td0 = el("td", b.unknown ? "?" : dash(today.range) + (today.label ? " (" + today.label + ")" : "")); td0.className = "time"; tr.append(td0);
+    var td1 = el("td", b.unknown ? "?" : dash(b.weekdays)); td1.className = "time"; tr.append(td1);
+    var td2 = el("td"); td2.className = "time";
+    (b.unknown ? "?" : weekendText(b)).split(", ").forEach(function (x, i) { if (i) td2.append(el("br")); td2.append(x); });
+    tr.append(td2);
     body.append(tr);
   });
+}
+
+function renderCards(box, key, items, now, withBuilding) {
+  var opts = [["all", t("All", "Alles")], ["open", t("Open now", "Nu open")]];
+  if (items.some(function (x) { return x.study; })) opts.push(["study", t("Study spots", "Studeerplekken")]);
+  var pick = filters[key] || "all";
+  if (items.length > 4) {
+    var bar = el("div"); bar.className = "filter";
+    bar.setAttribute("role", "group"); bar.setAttribute("aria-label", t("Filter", "Filteren"));
+    opts.forEach(function (o) {
+      var btn = el("button", o[1]); btn.type = "button";
+      btn.setAttribute("aria-pressed", pick === o[0] ? "true" : "false");
+      btn.addEventListener("click", function () { filters[key] = o[0]; if (window.rerender) window.rerender(); });
+      bar.append(btn);
+    });
+    box.append(bar);
+  }
+  var ul = el("ul"); ul.className = "cards";
+  items.forEach(function (b) {
+    var s = status(b, now);
+    if (pick === "open" && !s.open) return;
+    if (pick === "study" && !b.study) return;
+    var li = el("li"); li.className = "card " + statusClass(s) + (linkedName() === b.name ? " linked" : "");
+    var main = el("div"); main.className = "main";
+    var top = el("div"); top.className = "top";
+    var name = el("b"); name.append(mapLink(b));
+    var st = el("span", s.text.replace(/^\S+\s/, "")); st.className = "st";
+    top.append(name, st);
+    main.append(top);
+    var bits = [];
+    if (withBuilding && b.building) bits.push(b.building);
+    if (!b.unknown) bits.push(t("Mon–Fri ", "ma–vr ") + dash(b.weekdays), (b.saturday !== undefined || b.sunday !== undefined) ? weekendText(b) : t("Sat–Sun ", "za–zo ") + weekendText(b));
+    var sub = el("div"); sub.className = "sub";
+    bits.forEach(function (x, i) { if (i) sub.append(" · "); var sp = el("span", x); sp.className = "nw"; sub.append(sp); });
+    if (bits.length) main.append(sub);
+    if (noteOf(b)) { var note = el("div", noteOf(b)); note.className = "cnote"; main.append(note); }
+    li.append(main, starButton(b));
+    ul.append(li);
+  });
+  if (!ul.children.length) { var none = el("p", t("Nothing here right now.", "Hier is nu niets.")); none.className = "empty"; box.append(none); }
+  else box.append(ul);
 }
 
 // dutch public holidays

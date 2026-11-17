@@ -93,7 +93,7 @@ function render() {
   var answer = document.getElementById("answer"), summary = document.getElementById("summary");
   if (open.length === 0) {
     answer.textContent = "❌ NO, everything with known hours is closed.";
-    summary.textContent = "Check the table for the next opening. The Student Sports Café is open 7 days a week (hours on its website).";
+    summary.textContent = "Check the list below for the next opening. The Student Sports Café is open 7 days a week (hours on its website).";
   } else {
     answer.textContent = "✅ YES, " + open.length + (open.length === 1 ? " place is" : " places are") + " open.";
     summary.textContent = "Open now: " + open.map(function (f) {
@@ -103,7 +103,7 @@ function render() {
   var hol = holidayWarning(now);
   if (hol) {
     answer.textContent = "⚠️ NOT SURE, it's " + hol + ".";
-    summary.textContent = "Hours may be different today. The table below shows the normal hours.";
+    summary.textContent = "Hours may be different today. The list below shows the normal hours.";
   }
   document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
 }
