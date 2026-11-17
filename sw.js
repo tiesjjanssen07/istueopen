@@ -1,10 +1,10 @@
 // keeps a copy of the site so it also opens without internet.
 // always tries the network first, so updates show up straight away when online.
-var CACHE = "istueopen-v14";
+var CACHE = "istueopen-v16";
 var FILES = [
-  "./", "food", "report", "privacy", "404.html",
-  "nl/", "nl/eten", "nl/melden", "nl/privacy",
-  "style.css", "hours.js", "open.js", "site.js", "favicon.png", "icon-192.png", "manifest.webmanifest", "nl/manifest.webmanifest"
+  "./", "food", "map", "report", "privacy", "404.html",
+  "nl/", "nl/eten", "nl/kaart", "nl/melden", "nl/privacy",
+  "style.css", "hours.js", "open.js", "site.js", "map.js", "favicon.png", "icon-192.png", "manifest.webmanifest", "nl/manifest.webmanifest"
 ];
 
 self.addEventListener("install", function (e) {

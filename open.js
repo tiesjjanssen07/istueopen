@@ -7,6 +7,8 @@ var DAYS = NL ? ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijd
               : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var MONTHS = NL ? ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"]
                 : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function nameOf(b) { return (NL && b.nameNl) || b.name; }
+function buildingOf(b) { return (NL && b.buildingNl) || b.building || ""; }
 function noteOf(b) { return (NL && b.noteNl) || b.note || ""; }
 function labelOf(sp) { return sp ? ((NL && sp.labelNl) || sp.label) : ""; }
 var SHORT = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
@@ -104,10 +106,10 @@ function weekendText(b) {
 
 function mapLink(b) {
   var q = b.mapQuery || ((b.building && b.building !== b.name ? b.name + " " + b.building : b.name) + " TU Eindhoven");
-  var a = el("a", b.name);
+  var a = el("a", nameOf(b));
   a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
   a.target = "_blank"; a.rel = "noopener";
-  a.title = t("Show " + b.name + " on the map", b.name + " op de kaart bekijken");
+  a.title = t("Show " + b.name + " on the map", nameOf(b) + " op de kaart bekijken");
   return a;
 }
 
@@ -180,7 +182,7 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
     line.append(mapLink(b), starButton(b));
     th.append(line);
     tr.append(th);
-    if (withBuilding && b.building) { var meta = el("span", b.building); meta.className = "meta"; th.append(meta); }
+    if (withBuilding && b.building) { var meta = el("span", buildingOf(b)); meta.className = "meta"; th.append(meta); }
     if (noteOf(b)) { var note = el("span", noteOf(b)); note.className = "note"; th.append(note); }
     var now_td = el("td");
     now_td.className = "status " + statusClass(s);
@@ -193,6 +195,28 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
     tr.append(td2);
     body.append(tr);
   });
+}
+
+function makeCard(b, s, withBuilding) {
+  var li = el("li"); li.className = "card " + statusClass(s) + (linkedName() === b.name ? " linked" : "");
+  var main = el("div"); main.className = "main";
+  var top = el("div"); top.className = "top";
+  var name = el("b"); name.append(mapLink(b));
+  var st = el("span", s.text.replace(/^\S+\s/, "")); st.className = "st";
+  top.append(name, st);
+  main.append(top);
+  var bits = [];
+  if (withBuilding && b.building) bits.push(buildingOf(b));
+  var closedAll = !b.weekdays && !b.weekend && b.saturday === undefined && b.sunday === undefined;
+  if (!b.unknown && closedAll) bits.push(t("Closed all week", "De hele week gesloten"));
+  else if (!b.unknown) bits.push(t("Mon–Fri ", "ma–vr ") + dash(b.weekdays), (b.saturday !== undefined || b.sunday !== undefined) ? weekendText(b) : t("Sat–Sun ", "za–zo ") + weekendText(b));
+  bits = bits.map(function (x, i) { return i ? x.replace(t("Closed", "Gesloten"), t("closed", "gesloten")) : x; });
+  var sub = el("div"); sub.className = "sub";
+  bits.forEach(function (x, i) { if (i) sub.append(" · "); var sp = el("span", x); sp.className = "nw"; sub.append(sp); });
+  if (bits.length) main.append(sub);
+  if (noteOf(b)) { var note = el("div", noteOf(b)); note.className = "cnote"; main.append(note); }
+  li.append(main, starButton(b));
+  return li;
 }
 
 function renderCards(box, key, items, now, withBuilding) {
@@ -215,21 +239,7 @@ function renderCards(box, key, items, now, withBuilding) {
     var s = status(b, now);
     if (pick === "open" && !s.open) return;
     if (pick === "study" && !b.study) return;
-    var li = el("li"); li.className = "card " + statusClass(s) + (linkedName() === b.name ? " linked" : "");
-    var main = el("div"); main.className = "main";
-    var top = el("div"); top.className = "top";
-    var name = el("b"); name.append(mapLink(b));
-    var st = el("span", s.text.replace(/^\S+\s/, "")); st.className = "st";
-    top.append(name, st);
-    main.append(top);
-    var bits = [];
-    if (withBuilding && b.building) bits.push(b.building);
-    if (!b.unknown) bits.push(t("Mon–Fri ", "ma–vr ") + dash(b.weekdays), (b.saturday !== undefined || b.sunday !== undefined) ? weekendText(b) : t("Sat–Sun ", "za–zo ") + weekendText(b));
-    var sub = el("div"); sub.className = "sub";
-    bits.forEach(function (x, i) { if (i) sub.append(" · "); var sp = el("span", x); sp.className = "nw"; sub.append(sp); });
-    if (bits.length) main.append(sub);
-    if (noteOf(b)) { var note = el("div", noteOf(b)); note.className = "cnote"; main.append(note); }
-    li.append(main, starButton(b));
+    var li = makeCard(b, s, withBuilding);
     ul.append(li);
   });
   if (!ul.children.length) { var none = el("p", t("Nothing here right now.", "Hier is nu niets.")); none.className = "empty"; box.append(none); }
@@ -339,7 +349,7 @@ function starButton(b) {
   var on = isFav(b.name), btn = el("button", on ? "⭐" : "☆");
   btn.type = "button";
   btn.title = on ? t("Remove from your list", "Verwijderen uit je lijst") : t("Pin to the top", "Bovenaan vastzetten");
-  btn.setAttribute("aria-label", btn.title + ": " + b.name);
+  btn.setAttribute("aria-label", btn.title + ": " + nameOf(b));
   btn.setAttribute("aria-pressed", on ? "true" : "false");
   btn.setAttribute("data-star", b.name);
   btn.addEventListener("click", function () { toggleFav(b.name, btn); });
@@ -360,7 +370,7 @@ function shareButton(b) {
   btn.type = "button";
   btn.addEventListener("click", function () {
     var url = location.origin + location.pathname + "?b=" + encodeURIComponent(b.name);
-    var text = t("Is " + b.name + " open right now?", "Is " + b.name + " nu open?");
+    var text = t("Is " + b.name + " open right now?", "Is " + nameOf(b) + " nu open?");
     function done(msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = t("Share", "Delen"); }, 2500); }
     if (navigator.share) {
       navigator.share({ title: text, text: text, url: url }).catch(function () {});
@@ -389,7 +399,7 @@ function nextText(b, items, now) {
   var s = status(b, now);
   if (!s.open || s.until - now.minutes > 60) return "";
   var n = nextPlace(b, items, now);
-  if (n) return t(" → then: ", " → daarna: ") + n.place.name + t(" (until ", " (tot ") + fmt(n.until) + ")";
+  if (n) return t(" → then: ", " → daarna: ") + nameOf(n.place) + t(" (until ", " (tot ") + fmt(n.until) + ")";
   return "";
 }
 
@@ -403,6 +413,25 @@ function renderMine(boxId, items, now, title) {
   box.hidden = false;
   box.append(el("h2", title));
   var ul = el("ul");
+  if (window.innerWidth < 700) {
+    // phones: same cards as the lists below, with share/save underneath
+    ul.className = "cards";
+    var withBuilding = mine.some(function (x) { return x.building; });
+    mine.forEach(function (b) {
+      var s = status(b, now), li = makeCard(b, s, withBuilding), main = li.firstChild;
+      var nt = nextText(b, items, now);
+      if (nt) { var ns = el("div", nt.replace(/^ → /, "→ ")); ns.className = "cnext"; main.append(ns); }
+      var actions = el("div"); actions.className = "actions";
+      actions.append(shareButton(b));
+      if (!isFav(b.name)) { var save = el("button", t("⭐ Save", "⭐ Bewaren")); save.type = "button";
+        save.addEventListener("click", function () { toggleFav(b.name, save); }); actions.append(save); }
+      main.append(actions);
+      if (!isFav(b.name)) li.removeChild(li.lastChild);
+      ul.append(li);
+    });
+    box.append(ul, el("hr"));
+    return;
+  }
   mine.forEach(function (b) {
     var s = status(b, now), li = el("li");
     var label = el("b"); label.append(mapLink(b));

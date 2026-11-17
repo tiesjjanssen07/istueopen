@@ -21,8 +21,8 @@
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/eten">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="style.css">
 <script src="site.js"></script>
 </head>
@@ -98,7 +98,7 @@ function render() {
   } else {
     answer.textContent = "✅ YES, " + open.length + (open.length === 1 ? " place is" : " places are") + " open.";
     summary.textContent = "Open now: " + open.map(function (f) {
-      return f.name + (f.building ? " (" + f.building + ")" : "");
+      return nameOf(f) + (f.building ? " (" + buildingOf(f) + ")" : "");
     }).join(", ") + ".";
   }
   var hol = holidayWarning(now);

@@ -54,7 +54,7 @@
   function addPlace(p, rings) {
     rings.forEach(function (ring) {
       var poly = L.polygon(ring, styleFor(p, amsterdamNow())).addTo(map);
-      poly.bindTooltip(p.name, { permanent: true, direction: "center", className: "blabel" });
+      poly.bindTooltip(nameOf(p), { permanent: true, direction: "center", className: "blabel" });
       poly.on("click", function () { choose(p.name); });
       (shapes[p.name] = shapes[p.name] || []).push(poly);
     });
@@ -74,7 +74,7 @@
       });
       if (rings.length) addPlace(p, rings);
     });
-    var missing = places.filter(function (p) { return !shapes[p.name] && (p.weekdays || p.weekend); }).map(function (p) { return p.name; });
+    var missing = places.filter(function (p) { return !shapes[p.name] && (p.weekdays || p.weekend); }).map(function (p) { return nameOf(p); });
     if (missing.length && missingEl) missingEl.textContent = t("Not on the map (yet): ", "(Nog) niet op de kaart: ") + missing.join(", ") + ".";
     var all = [];
     Object.keys(shapes).forEach(function (k) { shapes[k].forEach(function (s) { all.push(s); }); });
@@ -122,9 +122,10 @@
     if (pa && centers[pa.name]) { sel = [pa.name]; if (pb && centers[pb.name] && pb !== pa) { sel.push(pb.name); route(); } else hint(); restyle(); }
     else hint();
   }
+  function shown(n) { var p = places.filter(function (x) { return x.name === n; })[0]; return p ? nameOf(p) : n; }
   function hint() {
     routeBox.replaceChildren(sel.length === 1
-      ? t(sel[0] + " selected. Now tap where you want to go.", sel[0] + " gekozen. Tik nu op waar je heen wilt.")
+      ? t(shown(sel[0]) + " selected. Now tap where you want to go.", shown(sel[0]) + " gekozen. Tik nu op waar je heen wilt.")
       : t("Tap a building to start, then tap where you want to go.", "Tik op een gebouw om te beginnen, en daarna op waar je heen wilt."));
   }
   function clearRoute() { if (routeLine) { map.removeLayer(routeLine); routeLine = null; } lastRoute = null; }
@@ -165,7 +166,7 @@
     var meters = Math.round(r.meters / 10) * 10, mins = Math.max(1, Math.round(r.meters / 80)), st = status(dest, now);
     routeBox.replaceChildren();
     var big = el("b", "🚶 " + mins + " min " + t("walk", "lopen")); big.className = "t";
-    routeBox.append(big, " (" + (r.rough ? t("roughly ", "ongeveer ") : t("about ", "ongeveer ")) + meters + " m)", el("br"), sel[0] + " → " + sel[1] + ": ");
+    routeBox.append(big, " (" + (r.rough ? t("roughly ", "ongeveer ") : t("about ", "ongeveer ")) + meters + " m)", el("br"), shown(sel[0]) + " → " + shown(sel[1]) + ": ");
     var sp = el("span"); sp.className = statusClass(st);
     if (st.open) sp.append(el("b", st.text)); else sp.append(st.text);
     routeBox.append(sp);

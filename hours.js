@@ -6,6 +6,7 @@ window.HOURS_CHECKED = "2026-11-17";
 // weekdays = mon-fri, weekend = sat+sun, null = closed
 // saturday/sunday can be set separately if they differ
 // note = english, noteNl = dutch
+// nameNl / buildingNl = dutch name to show on the dutch pages (optional; name stays the same in links and favourites)
 // mapQuery = what google maps should search for (optional)
 // osm = the building's name on openstreetmap, if it's different (for the campus map)
 window.BUILDINGS = [
@@ -34,11 +35,11 @@ window.BUILDINGS = [
 
 // other services
 window.SERVICES = [
-  { name: "Library", building: "MetaForum", weekdays: "08:00-22:00", weekend: "10:00-21:00",
+  { name: "Library", nameNl: "Bibliotheek", building: "MetaForum", weekdays: "08:00-22:00", weekend: "10:00-21:00",
     mapQuery: "TU/e Library MetaForum Eindhoven",
     note: "TU/e ID card needed during exam weeks", noteNl: "TU/e-kaart nodig in tentamenweken" },
   // from https://ssceindhoven.tue.nl (faq)
-  { name: "Student Sports Centre", building: "Sports Centre", osm: "Studentensportcentrum", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
+  { name: "Student Sports Centre", nameNl: "Studentensportcentrum", building: "Sports Centre", buildingNl: "Sportcentrum", osm: "Studentensportcentrum", weekdays: "07:30-00:00", saturday: "08:30-21:00", sunday: "09:00-17:00",
     mapQuery: "Student Sports Centre Eindhoven", note: "Exercising until 23:00 on weekdays", noteNl: "Sporten tot 23:00 op doordeweekse dagen" }
 ];
 
@@ -48,15 +49,15 @@ window.FOOD = [
   { name: "Coffee&Co",              building: "Atlas",     weekdays: "09:00-15:00", weekend: null },
   { name: "Brownies&Downies",       building: "Atlas",     weekdays: "09:00-16:00", weekend: null },
   { name: "Food City",              building: "Atlas",     weekdays: "11:30-13:30", weekend: null, note: "Hot lunch", noteNl: "Warme lunch" },
-  { name: "MetaForum canteen",      building: "MetaForum", weekdays: "09:00-15:00", weekend: null },
-  { name: "Vertigo canteen",        building: "Vertigo",   weekdays: "09:00-15:00", weekend: null },
-  { name: "Helix canteen",          building: "Helix",     weekdays: "10:00-14:00", weekend: null },
-  { name: "Gemini canteen",         building: "Gemini",    weekdays: "11:30-13:30", weekend: null },
-  { name: "Flux canteen",           building: "Flux",      weekdays: "10:00-14:00", weekend: null },
-  { name: "Neuron canteen",         building: "Neuron",    weekdays: "10:00-14:00", weekend: null },
-  { name: "Subway",                 building: "Auditorium",          weekdays: "10:00-15:00", weekend: null, mapQuery: "Subway TU Eindhoven" },
+  { name: "MetaForum canteen",   nameNl: "Kantine MetaForum", building: "MetaForum", weekdays: "09:00-15:00", weekend: null },
+  { name: "Vertigo canteen",     nameNl: "Kantine Vertigo",  building: "Vertigo",   weekdays: "09:00-15:00", weekend: null },
+  { name: "Helix canteen",       nameNl: "Kantine Helix",    building: "Helix",     weekdays: "10:00-14:00", weekend: null },
+  { name: "Gemini canteen",      nameNl: "Kantine Gemini",   building: "Gemini",    weekdays: "11:30-13:30", weekend: null },
+  { name: "Flux canteen",        nameNl: "Kantine Flux",     building: "Flux",      weekdays: "10:00-14:00", weekend: null },
+  { name: "Neuron canteen",      nameNl: "Kantine Neuron",   building: "Neuron",    weekdays: "10:00-14:00", weekend: null },
+  { name: "Subway",                 building: "Auditorium", weekdays: "10:00-15:00", weekend: null, mapQuery: "Subway TU Eindhoven" },
   { name: "Hubble Community Café",  building: "",          weekdays: "10:30-02:00", weekend: "10:30-02:00", note: "Open every day, also in the evening", noteNl: "Elke dag open, ook 's avonds", mapQuery: "Hubble Community Cafe Eindhoven" },
-  { name: "Student Sports Café",    building: "Sports Centre", weekdays: null, weekend: null, unknown: true, note: "Open 7 days a week; hours change weekly (see the SSC website)", noteNl: "7 dagen per week open; tijden wisselen per week (zie de SSC-website)", mapQuery: "Student Sports Centre Eindhoven" }
+  { name: "Student Sports Café",    building: "Sports Centre", buildingNl: "Sportcentrum", weekdays: null, weekend: null, unknown: true, note: "Open 7 days a week; hours change weekly (see the SSC website)", noteNl: "7 dagen per week open; tijden wisselen per week (zie de SSC-website)", mapQuery: "Student Sports Centre Eindhoven" }
 ];
 
 // days that show a "hours may be different" warning

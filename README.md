@@ -14,7 +14,7 @@ This is an unofficial student project and not affiliated with TU/e. The hours co
 - Pin your own buildings to the top, and share a link to one building
 - Study spots, exam period countdown and a rain warning
 - Warns on Dutch public holidays and TU/e bridge days
-- Report wrong hours through a form (only the admin sees the reports)
+- Report wrong hours or map mistakes through a form (only the admin sees the reports)
 - Works offline and can be added to your home screen
 - Menu on phones to jump straight to each section
 - Light and dark mode
@@ -39,6 +39,8 @@ Hours are written as `"07:30-20:00"`, and `null` means closed. A building looks 
   note: "Weekends 10:00–21:00 only during exam periods",
   noteNl: "Weekend 10:00–21:00 alleen in tentamenperiodes" }
 ```
+
+Optional fields: `nameNl` and `buildingNl` for a Dutch name on the Dutch pages, `osm` when the building has a different name on OpenStreetMap (for the campus map), and `mapQuery` for what Google Maps should search for.
 
 Also update `HOURS_CHECKED` at the top of the file when you've checked the hours.
 

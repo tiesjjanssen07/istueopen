@@ -21,8 +21,8 @@
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="../style.css">
 <script src="../site.js"></script>
 </head>
@@ -71,9 +71,10 @@
 
 <h2 id="info" data-jump="Goed om te weten">Goed om te weten</h2>
 <ul>
-  <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met Delen stuur je iemand een link naar dat gebouw.</li>
+  <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met Delen (in je lijst) stuur je iemand een link naar dat gebouw.</li>
   <li>Alle tijden zijn in Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
-  <li>⚠️ betekent dat een gebouw binnen 30 minuten sluit.</li>
+  <li>Oranje (⚠️) betekent dat een gebouw binnen 30 minuten sluit.</li>
+  <li>Op je telefoon spring je met de knoppen bovenaan naar een onderdeel, en filter je de lijst met Alles / Nu open / Studeerplekken.</li>
   <li>Op feestdagen, in de kerstvakantie, in de zomer en in tentamenperiodes kunnen de tijden afwijken.</li>
   <li>Gebouwen met een receptie zijn alleen tijdens openingstijden toegankelijk. Voor sommige gebouwen heb je een campuskaart nodig.</li>
   <li>Bekijk alle gebouwen op de <a href="kaart">kaart van de campus</a>, met looproutes.</li>
@@ -117,7 +118,7 @@ function render() {
     summary.textContent = open.length + " van de " + withHours.length + " gebouwen zijn open.";
   } else {
     answer.textContent = "🟡 DEELS, alleen een paar gebouwen zijn open.";
-    summary.textContent = "Nu open: " + open.map(function (b) { return b.name; }).join(", ") + ".";
+    summary.textContent = "Nu open: " + open.map(function (b) { return nameOf(b); }).join(", ") + ".";
   }
   var hol = holidayWarning(now);
   if (hol) {
@@ -136,7 +137,7 @@ function render() {
   if (openStudy.length) {
     openStudy.forEach(function (b) {
       var li = el("li"), st = el("span", status(b, now).text.replace(/^✅ /, "")); st.className = statusClass(status(b, now));
-      li.append(el("b", b.name), " ", st);
+      li.append(el("b", nameOf(b)), " ", st);
       var nx = nextText(b, study, now); if (nx) { var ns = el("span", nx.replace(/^ → /, "→ ")); ns.className = "next"; li.append(ns); }
       ul.append(li);
     });
@@ -144,7 +145,7 @@ function render() {
   } else {
     box.append(el("p", "Er is nu geen studiegebouw open. Ze gaan weer open:"));
     study.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), el("span", status(b, now).text.replace(/^❌ Gesloten, /, "")));
+      var li = el("li"); li.append(el("b", nameOf(b)), el("span", status(b, now).text.replace(/^❌ Gesloten, /, "")));
       ul.append(li);
     });
     box.append(ul);

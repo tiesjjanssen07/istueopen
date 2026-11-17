@@ -10,8 +10,8 @@
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="style.css">
 <script src="site.js"></script>
 </head>
@@ -26,7 +26,7 @@
 <hr>
 
 <h1>Spotted wrong hours?</h1>
-<p>Thanks for helping keep this site correct! Tell me which place is wrong and what the right hours are.
+<p>Thanks for helping keep this site correct! Tell me which place is wrong and what the right hours are, or what's wrong on the map.
 Only I can see these reports; they are not published.</p>
 
 <form id="form" onsubmit="return false">
@@ -54,7 +54,9 @@ Only I can see these reports; they are not published.</p>
     });
     select.append(og);
   });
-  var o = document.createElement("option"); o.value = o.textContent = "Something else"; select.append(o);
+  [["Campus map", "Campus map (missing building, wrong route)"], ["Something else", "Something else"]].forEach(function (x) {
+    var o = document.createElement("option"); o.value = x[0]; o.textContent = x[1]; select.append(o);
+  });
   var wanted = new URLSearchParams(location.search).get("place");
   if (wanted) select.value = wanted;
 })();

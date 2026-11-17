@@ -21,8 +21,8 @@
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#151514" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="style.css">
 <script src="site.js"></script>
 </head>
@@ -71,9 +71,10 @@
 
 <h2 id="info" data-jump="Good to know">Good to know</h2>
 <ul>
-  <li>Tap ☆ next to a name to pin it to the top. With Share you can send someone a link to that building.</li>
+  <li>Tap ☆ next to a name to pin it to the top. With Share (in your list) you can send someone a link to that building.</li>
   <li>Times are Dutch time (Europe/Amsterdam). The page updates itself every 30 seconds.</li>
-  <li>⚠️ means a building closes within 30 minutes.</li>
+  <li>Orange (⚠️) means a building closes within 30 minutes.</li>
+  <li>On a phone, use the buttons at the top to jump to a section, and All / Open now / Study spots to filter the list.</li>
   <li>Hours can differ during holidays, the Christmas break, the summer and exam periods.</li>
   <li>Buildings with a reception are only accessible during opening hours. Some buildings need a campus card.</li>
   <li>See every building on the <a href="map">campus map</a>, with walking routes.</li>
@@ -117,7 +118,7 @@ function render() {
     summary.textContent = open.length + " of " + withHours.length + " buildings are open.";
   } else {
     answer.textContent = "🟡 PARTLY, only some buildings are open.";
-    summary.textContent = "Open now: " + open.map(function (b) { return b.name; }).join(", ") + ".";
+    summary.textContent = "Open now: " + open.map(function (b) { return nameOf(b); }).join(", ") + ".";
   }
   var hol = holidayWarning(now);
   if (hol) {
@@ -136,7 +137,7 @@ function render() {
   if (openStudy.length) {
     openStudy.forEach(function (b) {
       var li = el("li"), st = el("span", status(b, now).text.replace(/^✅ /, "")); st.className = statusClass(status(b, now));
-      li.append(el("b", b.name), " ", st);
+      li.append(el("b", nameOf(b)), " ", st);
       var nx = nextText(b, study, now); if (nx) { var ns = el("span", nx.replace(/^ → /, "→ ")); ns.className = "next"; li.append(ns); }
       ul.append(li);
     });
@@ -144,7 +145,7 @@ function render() {
   } else {
     box.append(el("p", "No study buildings are open right now. Next openings:"));
     study.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), el("span", status(b, now).text.replace(/^❌ Closed, /, "")));
+      var li = el("li"); li.append(el("b", nameOf(b)), el("span", status(b, now).text.replace(/^❌ Closed, /, "")));
       ul.append(li);
     });
     box.append(ul);

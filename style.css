@@ -71,11 +71,9 @@ nav a[hreflang] { margin-left: auto; font-size: 13px; font-weight: 600; letter-s
 #summary, #clock { color: var(--muted); margin: 4px 0; font-size: 15px; }
 
 /* small notices under the answer */
-.maplink, #weather, #exam, #banner p, #offline {
+#weather, #exam, #banner p, #offline {
   margin: 6px 0; padding: 10px 14px; border-radius: 12px; background: var(--soft); font-size: 15px;
 }
-.maplink { margin-top: 16px; }
-.maplink a { font-weight: 500; }
 #weather small, #weather small a { color: var(--faint); }
 #banner p, #offline { background: var(--amberbg); }
 
@@ -245,3 +243,13 @@ footer a { color: var(--muted); text-decoration: underline; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media (min-width: 700px) { .jump { display: none; } }
 html { overflow-anchor: none; }
+#mine .cards li { padding: 12px 10px 12px 14px; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: var(--radius); }
+#mine .cards li.open { border-left-color: var(--green); }
+#mine .cards li.soon { border-left-color: var(--amber); }
+#mine .cards li + li { border-top: 1px solid var(--line); }
+#mine .cards .cnext { font-size: 13px; color: var(--muted); margin-top: 2px; }
+#mine .cards .actions { display: flex; gap: 6px; margin-top: 8px; }
+#mine .cards li { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 10px; margin: 0; }
+#mine .cards li.linked { background: var(--amberbg); }
+#mine .cards .actions { margin-left: 0; }
+#mine .cards { display: grid; gap: 8px; }
