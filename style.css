@@ -243,3 +243,4 @@ footer a { color: var(--muted); text-decoration: underline; }
   [data-jump] { scroll-margin-top: 68px; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+@media (min-width: 700px) { .jump { display: none; } }

@@ -16,7 +16,7 @@ This is an unofficial student project and not affiliated with TU/e. The hours co
 - Warns on Dutch public holidays and TU/e bridge days
 - Report wrong hours through a form (only the admin sees the reports)
 - Works offline and can be added to your home screen
-- Menu to jump straight to each section
+- Menu on phones to jump straight to each section
 - Light and dark mode
 
 ## Changing the hours
