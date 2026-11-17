@@ -244,3 +244,4 @@ footer a { color: var(--muted); text-decoration: underline; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media (min-width: 700px) { .jump { display: none; } }
+html { overflow-anchor: none; }

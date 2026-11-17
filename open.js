@@ -314,13 +314,26 @@ function favs() {
   try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch (e) { return []; }
 }
 function isFav(name) { return favs().indexOf(name) !== -1; }
-function toggleFav(name) {
+function toggleFav(name, btn) {
+  // remember where the clicked star was, so the page doesn't jump
+  var box = btn && btn.closest("[id]"), boxId = box ? box.id : null;
+  var before = btn ? btn.getBoundingClientRect().top : null;
   var f = favs(), i = f.indexOf(name);
   if (i === -1) f.push(name); else f.splice(i, 1);
   try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch (e) {}
   if (window.rerender) window.rerender();
-  var stars = document.querySelectorAll("button[data-star]");
-  for (var k = 0; k < stars.length; k++) if (stars[k].getAttribute("data-star") === name) { stars[k].focus(); break; }
+  var stars = [].slice.call(document.querySelectorAll("button[data-star]")).filter(function (s) { return s.getAttribute("data-star") === name && s.offsetParent; });
+  var same = stars.filter(function (s) { var c = s.closest("[id]"); return c && c.id === boxId; })[0];
+  var target = same || stars.filter(function (s) { var c = s.closest("[id]"); return !c || c.id !== "mine"; })[0] || stars[0];
+  if (!target) return;
+  // if the clicked star itself is gone (unpinned from your list), just leave the page where it is
+  if (before !== null && same) {
+    var html = document.documentElement, old = html.style.scrollBehavior;
+    html.style.scrollBehavior = "auto";
+    window.scrollBy(0, target.getBoundingClientRect().top - before);
+    html.style.scrollBehavior = old;
+  }
+  try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
 }
 function starButton(b) {
   var on = isFav(b.name), btn = el("button", on ? "⭐" : "☆");
@@ -329,7 +342,7 @@ function starButton(b) {
   btn.setAttribute("aria-label", btn.title + ": " + b.name);
   btn.setAttribute("aria-pressed", on ? "true" : "false");
   btn.setAttribute("data-star", b.name);
-  btn.addEventListener("click", function () { toggleFav(b.name); });
+  btn.addEventListener("click", function () { toggleFav(b.name, btn); });
   return btn;
 }
 
@@ -403,7 +416,7 @@ function renderMine(boxId, items, now, title) {
     var actions = el("span"); actions.className = "actions";
     actions.append(shareButton(b));
     if (!isFav(b.name)) { var save = el("button", t("⭐ Save", "⭐ Bewaren")); save.type = "button";
-      save.addEventListener("click", function () { toggleFav(b.name); }); actions.append(save); }
+      save.addEventListener("click", function () { toggleFav(b.name, save); }); actions.append(save); }
     li.append(actions);
     ul.append(li);
   });
