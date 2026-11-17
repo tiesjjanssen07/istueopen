@@ -130,6 +130,9 @@ function markAnswer() {
   if (!a) return;
   var c = a.textContent.charAt(0);
   a.className = c === "✅" ? "yes" : c === "❌" ? "no" : "warn";
+  // the same emoji at the end of the tab title
+  if (!markAnswer.title) markAnswer.title = document.title;
+  document.title = markAnswer.title + " " + (c === "✅" ? "✅" : c === "❌" ? "❌" : "🟠");
 }
 
 function el(tag, text) { var e = document.createElement(tag); if (text != null) e.textContent = text; return e; }
