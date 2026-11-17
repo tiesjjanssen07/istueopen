@@ -72,6 +72,19 @@ function capRange(r, closeAt) {
   if (p.open >= c) return null;
   return p.close > c ? r.split("-")[0] + "-" + closeAt : r;
 }
+// small "hours checked 11 nov" after the clock line, orange when it's over two weeks old
+function addChecked(box, now) {
+  var c = window.HOURS_CHECKED;
+  if (!box || !/^\d{4}-\d{2}-\d{2}$/.test(c || "")) return;
+  var d = new Date(c + "T12:00:00Z"), age = Math.round((new Date(now.date + "T12:00:00Z") - d) / 864e5);
+  var text = d.getUTCDate() + " " + MONTHS[d.getUTCMonth()].slice(0, 3) + (c.slice(0, 4) !== now.date.slice(0, 4) ? " " + c.slice(0, 4) : "");
+  var sp = el("span");
+  sp.className = "checked" + (age > 14 ? " old" : "");
+  sp.textContent = "· " + (age > 14 ? t("hours checked " + Math.floor(age / 7) + " weeks ago", "tijden " + Math.floor(age / 7) + " weken geleden gecontroleerd")
+                            : t("hours checked " + text, "tijden gecontroleerd op " + text));
+  sp.title = t("Last checked against the official TU/e pages", "Laatst vergeleken met de officiële TU/e-pagina's");
+  box.append(" ", sp);
+}
 function checkedText() {
   var c = window.HOURS_CHECKED;
   if (!c) return t("unknown", "onbekend");

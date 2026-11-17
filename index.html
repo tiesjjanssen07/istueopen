@@ -125,6 +125,7 @@ function render() {
     summary.textContent = "Hours may be different today. The lists below show the normal hours.";
   }
   document.getElementById("clock").textContent = "It is " + DAYS[now.day] + " " + now.time + " in Eindhoven.";
+  addChecked(document.getElementById("clock"), now);
 
   var box = document.getElementById("study");
   box.replaceChildren();

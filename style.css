@@ -225,3 +225,5 @@ footer a { color: var(--muted); text-decoration: underline; }
 .cardbox .empty { color: var(--muted); }
 .card.open, .card.soon, .card.closed, .card.unknown { color: var(--fg); font-weight: 400; }
 [hidden] { display: none !important; }
+.checked { color: var(--faint); white-space: nowrap; }
+.checked.old { color: var(--amber); font-weight: 600; }
