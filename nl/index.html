@@ -42,7 +42,7 @@
 <h2 id="answer">Even kijken…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
-<p><a href="kaart">Bekijk het op de kaart, met looproutes →</a></p>
+<p class="maplink"><a href="kaart">Bekijk het op de kaart, met looproutes →</a></p>
 <p id="weather" hidden></p>
 <p id="exam" hidden></p>
 <hr>
@@ -134,7 +134,9 @@ function render() {
   var ul = el("ul");
   if (openStudy.length) {
     openStudy.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^✅ /, "") + (noteOf(b) ? " (" + noteOf(b) + ")" : "") + nextText(b, study, now));
+      var li = el("li"), st = el("span", status(b, now).text.replace(/^✅ /, "")); st.className = statusClass(status(b, now));
+      li.append(el("b", b.name), " ", st);
+      var nx = nextText(b, study, now); if (nx) { var ns = el("span", nx.replace(/^ → /, "→ ")); ns.className = "next"; li.append(ns); }
       ul.append(li);
     });
     box.append(ul);

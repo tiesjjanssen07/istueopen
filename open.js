@@ -136,13 +136,14 @@ function el(tag, text) { var e = document.createElement(tag); if (text != null) 
 
 // phones get fewer columns
 function renderTable(headId, bodyId, items, now, withBuilding) {
-  var narrow = window.innerWidth < 600;
+  var narrow = window.innerWidth < 700;
   var head = document.getElementById(headId), body = document.getElementById(bodyId);
   head.replaceChildren(); body.replaceChildren();
 
-  var cols = [t("Name", "Naam"), t("Right now", "Nu"), t("Today", "Vandaag")];
-  if (!narrow) { if (withBuilding) cols.push(t("Building", "Gebouw")); cols.push(t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo"), t("Notes", "Opmerkingen")); }
-  if (!withBuilding) cols[0] = t("Building", "Gebouw");
+  // phones: two columns, the week's hours go under the name
+  var cols = narrow ? [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu")]
+                    : [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu"), t("Today", "Vandaag")];
+  if (!narrow) cols.push(t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo"));
   var hr = el("tr");
   cols.forEach(function (c) { var th = el("th", c); th.scope = "col"; hr.append(th); });
   head.append(hr);
@@ -150,28 +151,34 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
   items.forEach(function (b) {
     var s = status(b, now), today = hoursOn(b, now.date, now.day);
     var tr = el("tr");
+    if (linkedName() === b.name) tr.className = "linked";
     var th = el("th"); th.scope = "row";
-    var name = mapLink(b);
-    if (linkedName() === b.name) { var mk = el("mark"); mk.append(name); th.append(mk); } else th.append(name);
-    th.append(" ", starButton(b));
+    var line = el("span"); line.className = "name";
+    line.append(mapLink(b), starButton(b));
+    th.append(line);
     tr.append(th);
-    if (narrow) {
-      var small = el("small");
-      if (withBuilding && b.building) small.append(el("br"), b.building);
-      if (!b.unknown) small.append(el("br"), t("Mon–Fri ", "ma–vr ") + dash(b.weekdays), el("br"), t("Sat–Sun ", "za–zo ") + weekendText(b));
-      if (noteOf(b)) small.append(el("br"), noteOf(b));
-      th.append(small);
+    // under the name: building, the week's hours (phones only) and the note
+    var meta = el("span"); meta.className = "meta";
+    var bits = [];
+    if (withBuilding && b.building) bits.push(b.building);
+    if (narrow && !b.unknown) {
+      bits.push(t("Mon–Fri ", "ma–vr ") + dash(b.weekdays));
+      if (b.saturday !== undefined || b.sunday !== undefined) weekendText(b).split(", ").forEach(function (x) { bits.push(x); });
+      else bits.push(t("Sat–Sun ", "za–zo ") + weekendText(b));
     }
+    bits.forEach(function (x, i) { if (i) meta.append(" · "); var sp = el("span", x); sp.className = "nw"; meta.append(sp); });
+    if (bits.length) th.append(meta);
+    if (noteOf(b)) { var note = el("span", noteOf(b)); note.className = "note"; th.append(note); }
     var now_td = el("td");
-    now_td.className = statusClass(s);
+    now_td.className = "status " + statusClass(s);
     if (s.open) now_td.append(el("b", s.text)); else now_td.textContent = s.text;
     tr.append(now_td);
-    tr.append(el("td", b.unknown ? "?" : dash(today.range) + (today.label ? " (" + today.label + ")" : "")));
     if (!narrow) {
-      if (withBuilding) tr.append(el("td", b.building || ""));
-      tr.append(el("td", b.unknown ? "?" : dash(b.weekdays)));
-      tr.append(el("td", b.unknown ? "?" : weekendText(b)));
-      tr.append(el("td", noteOf(b)));
+      var td0 = el("td", b.unknown ? "?" : dash(today.range) + (today.label ? " (" + today.label + ")" : "")); td0.className = "time"; tr.append(td0);
+      var td1 = el("td", b.unknown ? "?" : dash(b.weekdays)); td1.className = "time"; tr.append(td1);
+      var td2 = el("td"); td2.className = "time";
+      (b.unknown ? "?" : weekendText(b)).split(", ").forEach(function (x, i) { if (i) td2.append(el("br")); td2.append(x); });
+      tr.append(td2);
     }
     body.append(tr);
   });
@@ -243,9 +250,9 @@ function keepFresh(draw) {
   render();
   setInterval(render, 30000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) render(); });
-  var lastNarrow = window.innerWidth < 600;
+  var lastNarrow = window.innerWidth < 700;
   window.addEventListener("resize", function () {
-    if ((window.innerWidth < 600) !== lastNarrow) { lastNarrow = !lastNarrow; render(); }
+    if ((window.innerWidth < 700) !== lastNarrow) { lastNarrow = !lastNarrow; render(); }
   });
 }
 
@@ -333,16 +340,19 @@ function renderMine(boxId, items, now, title) {
   var ul = el("ul");
   mine.forEach(function (b) {
     var s = status(b, now), li = el("li");
-    var label = el("b"); label.append(mapLink(b)); li.append(label, ": ");
+    var label = el("b"); label.append(mapLink(b));
+    li.append(label);
+    if (isFav(b.name)) li.append(starButton(b));
     var st = el("span"); st.className = statusClass(s);
     if (s.open) st.append(el("b", s.text)); else st.append(s.text);
     li.append(st);
     var nt = nextText(b, items, now);
-    if (nt) li.append(el("br"), nt);
-    li.append(el("br"), shareButton(b), " ");
-    if (isFav(b.name)) li.append(starButton(b));
-    else { var save = el("button", t("⭐ Save", "⭐ Bewaren")); save.type = "button";
-           save.addEventListener("click", function () { toggleFav(b.name); }); li.append(save); }
+    if (nt) { var ns = el("span", nt.replace(/^ → /, "→ ")); ns.className = "next"; li.append(ns); }
+    var actions = el("span"); actions.className = "actions";
+    actions.append(shareButton(b));
+    if (!isFav(b.name)) { var save = el("button", t("⭐ Save", "⭐ Bewaren")); save.type = "button";
+      save.addEventListener("click", function () { toggleFav(b.name); }); actions.append(save); }
+    li.append(actions);
     ul.append(li);
   });
   box.append(ul, el("hr"));
