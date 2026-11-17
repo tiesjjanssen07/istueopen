@@ -1,7 +1,7 @@
 // opening hours, from https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings
 
 // date I last checked the hours (YYYY-MM-DD)
-window.HOURS_CHECKED = "2026-11-11";
+window.HOURS_CHECKED = "2026-11-17";
 
 // weekdays = mon-fri, weekend = sat+sun, null = closed
 // saturday/sunday can be set separately if they differ
