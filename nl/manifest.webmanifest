@@ -1,7 +1,7 @@
 {
   "name": "Is de TU/e open?",
   "short_name": "TU/e open?",
-  "description": "Welke TU/e-gebouwen zijn nu open?",
+  "description": "Welke TU/e-gebouwen zijn nu open? Met kaart en looproutes.",
   "lang": "nl",
   "start_url": "./",
   "scope": "../",
@@ -27,5 +27,29 @@
   ],
   "display": "standalone",
   "background_color": "#fafaf7",
-  "theme_color": "#fafaf7"
+  "theme_color": "#fafaf7",
+  "shortcuts": [
+    {
+      "name": "Kaart",
+      "short_name": "Kaart",
+      "url": "kaart",
+      "icons": [
+        {
+          "src": "../icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Eten",
+      "short_name": "Eten",
+      "url": "eten",
+      "icons": [
+        {
+          "src": "../icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

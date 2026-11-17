@@ -1,7 +1,7 @@
 {
   "name": "Is the TU/e open?",
   "short_name": "TU/e open?",
-  "description": "Which TU/e buildings are open right now?",
+  "description": "Which TU/e buildings are open right now? With a campus map and walking routes.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",
@@ -27,5 +27,29 @@
   ],
   "display": "standalone",
   "background_color": "#fafaf7",
-  "theme_color": "#fafaf7"
+  "theme_color": "#fafaf7",
+  "shortcuts": [
+    {
+      "name": "Campus map",
+      "short_name": "Map",
+      "url": "map",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Food",
+      "short_name": "Food",
+      "url": "food",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }
