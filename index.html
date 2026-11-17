@@ -42,34 +42,35 @@
 <h2 id="answer">Checking…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
+<div class="jump" role="navigation" aria-label="On this page"></div>
 <p class="maplink"><a href="map">See it on the campus map, with walking routes →</a></p>
 <p id="weather" hidden></p>
 <p id="exam" hidden></p>
 <hr>
-<div id="mine" hidden></div>
+<div id="mine" hidden data-jump="Your buildings"></div>
 
 <noscript>
   <p><b>Turn on JavaScript to see which buildings are open right now.</b>
   You can also check the <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">official opening hours</a>.</p>
 </noscript>
 
-<h2>Where can I study right now?</h2>
+<h2 id="where-to-study" data-jump="Study spots">Where can I study right now?</h2>
 <div id="study"></div>
 
-<h2>All buildings</h2>
+<h2 id="all" data-jump="All buildings">All buildings</h2>
 <table border="1" cellpadding="6" cellspacing="0">
   <thead id="head"></thead>
   <tbody id="buildings"></tbody>
 </table>
 
-<h2>Other services</h2>
+<h2 id="services" data-jump="Services">Other services</h2>
 <table border="1" cellpadding="6" cellspacing="0">
   <thead id="services-head"></thead>
   <tbody id="services"></tbody>
 </table>
 <p><small>Library hours: <a href="https://www.tue.nl/library">tue.nl/library</a> · Sports Centre hours: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
 
-<h2>Good to know</h2>
+<h2 id="info" data-jump="Good to know">Good to know</h2>
 <ul>
   <li>Tap ☆ next to a name to pin it to the top. With Share you can send someone a link to that building.</li>
   <li>Times are Dutch time (Europe/Amsterdam). The page updates itself every 30 seconds.</li>
@@ -144,7 +145,7 @@ function render() {
   } else {
     box.append(el("p", "No study buildings are open right now. Next openings:"));
     study.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^❌ Closed, /, ""));
+      var li = el("li"); li.append(el("b", b.name), el("span", status(b, now).text.replace(/^❌ Closed, /, "")));
       ul.append(li);
     });
     box.append(ul);

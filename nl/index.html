@@ -42,34 +42,35 @@
 <h2 id="answer">Even kijken…</h2>
 <p id="summary"></p>
 <p id="clock"></p>
+<div class="jump" role="navigation" aria-label="Op deze pagina"></div>
 <p class="maplink"><a href="kaart">Bekijk het op de kaart, met looproutes →</a></p>
 <p id="weather" hidden></p>
 <p id="exam" hidden></p>
 <hr>
-<div id="mine" hidden></div>
+<div id="mine" hidden data-jump="Jouw gebouwen"></div>
 
 <noscript>
   <p><b>Zet JavaScript aan om te zien welke gebouwen nu open zijn.</b>
   Je kunt ook de <a href="https://www.tue.nl/en/our-university/tue-campus/buildings/opening-hours-buildings">officiële openingstijden</a> bekijken.</p>
 </noscript>
 
-<h2>Waar kan ik nu studeren?</h2>
+<h2 id="where-to-study" data-jump="Studeerplekken">Waar kan ik nu studeren?</h2>
 <div id="study"></div>
 
-<h2>Alle gebouwen</h2>
+<h2 id="all" data-jump="Alle gebouwen">Alle gebouwen</h2>
 <table border="1" cellpadding="6" cellspacing="0">
   <thead id="head"></thead>
   <tbody id="buildings"></tbody>
 </table>
 
-<h2>Andere voorzieningen</h2>
+<h2 id="services" data-jump="Voorzieningen">Andere voorzieningen</h2>
 <table border="1" cellpadding="6" cellspacing="0">
   <thead id="services-head"></thead>
   <tbody id="services"></tbody>
 </table>
 <p><small>Openingstijden bibliotheek: <a href="https://www.tue.nl/library">tue.nl/library</a> · Studentensportcentrum: <a href="https://ssceindhoven.tue.nl/en/">ssceindhoven.tue.nl</a></small></p>
 
-<h2>Goed om te weten</h2>
+<h2 id="info" data-jump="Goed om te weten">Goed om te weten</h2>
 <ul>
   <li>Tik op ☆ naast een naam om die bovenaan vast te zetten. Met Delen stuur je iemand een link naar dat gebouw.</li>
   <li>Alle tijden zijn in Nederlandse tijd. De pagina ververst zichzelf elke 30 seconden.</li>
@@ -144,7 +145,7 @@ function render() {
   } else {
     box.append(el("p", "Er is nu geen studiegebouw open. Ze gaan weer open:"));
     study.forEach(function (b) {
-      var li = el("li"); li.append(el("b", b.name), ": " + status(b, now).text.replace(/^❌ Gesloten, /, ""));
+      var li = el("li"); li.append(el("b", b.name), el("span", status(b, now).text.replace(/^❌ Gesloten, /, "")));
       ul.append(li);
     });
     box.append(ul);

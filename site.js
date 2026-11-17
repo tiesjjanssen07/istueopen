@@ -69,6 +69,34 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
+    // menu to jump to each section (sticky on phones)
+    var jump = document.querySelector(".jump"), targets = [].slice.call(document.querySelectorAll("[data-jump]"));
+    if (jump && targets.length) {
+      var links = targets.map(function (sec) {
+        var a = document.createElement("a");
+        a.href = "#" + sec.id; a.textContent = sec.getAttribute("data-jump");
+        jump.append(a);
+        return a;
+      });
+      var current = null;
+      function showLinks() { targets.forEach(function (sec, i) { if (links[i].hidden !== sec.hidden) links[i].hidden = sec.hidden; }); }
+      function onJumpScroll() {
+        jump.classList.toggle("stuck", jump.getBoundingClientRect().top <= 0 && window.scrollY > 0);
+        var pick = null;
+        targets.forEach(function (sec, i) { if (!sec.hidden && sec.getBoundingClientRect().top < 120) pick = i; });
+        if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 4) pick = targets.length - 1;
+        if (pick === current) return;
+        current = pick;
+        links.forEach(function (a, i) { a.classList.toggle("on", i === pick); if (i === pick) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); });
+        if (pick !== null && jump.scrollWidth > jump.clientWidth) jump.scrollTo({ left: links[pick].offsetLeft - 16, behavior: "smooth" });
+      }
+      if (window.MutationObserver) { var mo = new MutationObserver(showLinks); targets.forEach(function (sec) { mo.observe(sec, { attributes: true, attributeFilter: ["hidden"] }); }); }
+      showLinks();
+      window.addEventListener("scroll", onJumpScroll, { passive: true });
+      window.addEventListener("resize", onJumpScroll);
+      onJumpScroll();
+    }
+
     // note when there's no internet (the page then shows the saved version)
     var note = document.createElement("p");
     note.id = "offline"; note.hidden = navigator.onLine !== false;
