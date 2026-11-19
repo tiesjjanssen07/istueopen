@@ -1,12 +1,12 @@
 # downloads data/buildings.json (campus building outlines from openstreetmap)
-# runs once when this file changes; run it again by hand from the actions tab if buildings change
+# runs when this file or an osm: name in js/hours.js changes; run it by hand from the actions tab if buildings change
 name: update building outlines
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [".github/workflows/buildings.yml"]
+    paths: [".github/workflows/buildings.yml", "js/hours.js"]
 
 permissions:
   contents: write
