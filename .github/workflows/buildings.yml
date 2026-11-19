@@ -46,6 +46,8 @@ jobs:
           if len(out) < 10:
               raise SystemExit("too few buildings (%d), keeping the old file" % len(out))
           out.sort(key=lambda b: b["name"])
+          import os
+          os.makedirs("data", exist_ok=True)
           with open("data/buildings.json", "w") as f:
               json.dump(out, f, separators=(",", ":"))
           print(len(out), "buildings")
