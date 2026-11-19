@@ -12,6 +12,7 @@
   }
 
   var BBOX = "51.4425,5.4790,51.4545,5.5010"; // south,west,north,east around the campus
+  var MAIN = [[51.4457, 5.4837], [51.4495, 5.4964]]; // the main part of the campus, for the first view
   var CACHE_KEY = "istueopen-osm-v1", WEEK = 7 * 24 * 3600 * 1000;
   var COLORS = { open: "#1f7a3f", soon: "#e09a1b", closed: "#8a8a85", unknown: "#8a8a85" };
 
@@ -84,9 +85,8 @@
     });
     var missing = places.filter(function (p) { return !shapes[p.name] && (p.weekdays || p.weekend); }).map(function (p) { return nameOf(p); });
     if (missing.length && missingEl) missingEl.textContent = t("Not on the map (yet): ", "(Nog) niet op de kaart: ") + missing.join(", ") + ".";
-    var all = [];
-    Object.keys(shapes).forEach(function (k) { shapes[k].forEach(function (s) { all.push(s); }); });
-    if (all.length) map.fitBounds(L.featureGroup(all).getBounds(), { padding: [10, 10] });
+    // start on the main part of the campus; the sports centre and vector are a short scroll north
+    if (Object.keys(shapes).length) map.fitBounds(MAIN, { padding: [10, 10] });
     restyle();
     preselect();
   }
