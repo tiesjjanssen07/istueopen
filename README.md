@@ -22,7 +22,7 @@ A quick way to see which buildings, study spots and places to eat on the TU/e ca
 
 ## How it works
 
-It's a plain static site: HTML, CSS and JavaScript, with no framework and no build step. All opening hours live in one file, [`js/hours.js`](js/hours.js), and the pages work out in the browser what's open, using Dutch time. Public holidays such as Easter and King's Day are calculated, so they don't need updating every year.
+It's a plain static site: HTML, CSS and JavaScript, with no framework and no build step. All opening hours live in one file, [`js/hours.js`](js/hours.js), and the pages work out in the browser what's open, using Dutch time. Public holidays such as Easter and King's Day are calculated, so they don't need updating every year. The building outlines for the map are downloaded from OpenStreetMap by a GitHub Action and saved in the repo, so the map loads instantly.
 
 ```
 index.html, food.html, map.html,     the English pages
@@ -34,6 +34,7 @@ js/map.js                            campus map and walking routes
 js/site.js                           theme, language and offline support
 css/style.css                        the design
 img/                                 icons and preview images
+data/buildings.json                  building outlines for the map, from OpenStreetMap
 sw.js                                offline support
 admin.html                           private page for reading reports
 ```

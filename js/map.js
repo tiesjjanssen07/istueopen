@@ -1,5 +1,7 @@
-// campus map: openstreetmap tiles (leaflet), building outlines from overpass, walking routes from routing.openstreetmap.de
+// campus map: openstreetmap tiles (leaflet), building outlines from data/buildings.json (made by a github action,
+// overpass as a fallback), walking routes from routing.openstreetmap.de
 (function () {
+  var me = document.currentScript && document.currentScript.src;
   var mapEl = document.getElementById("map"), routeBox = document.getElementById("routebox"), missingEl = document.getElementById("missing");
   if (!mapEl) return;
   if (!window.L) {
@@ -63,16 +65,22 @@
     if (!centers[p.name]) centers[p.name] = [lat / n, lon / n];
   }
 
-  function useData(elements) {
-    elements.forEach(function (e) {
-      var p = matchPlace(e.tags && e.tags.name);
-      if (!p) return;
+  // turn overpass elements into the same shape as data/buildings.json: [{ name, rings: [[[lat, lon], ...]] }]
+  function fromOverpass(elements) {
+    return elements.map(function (e) {
       var rings = [];
       if (e.type === "way" && e.geometry) rings.push(e.geometry.map(function (g) { return [g.lat, g.lon]; }));
       if (e.type === "relation" && e.members) e.members.forEach(function (m) {
         if (m.role === "outer" && m.geometry) rings.push(m.geometry.map(function (g) { return [g.lat, g.lon]; }));
       });
-      if (rings.length) addPlace(p, rings);
+      return { name: e.tags && e.tags.name, rings: rings };
+    });
+  }
+
+  function useData(list) {
+    list.forEach(function (b) {
+      var p = matchPlace(b.name);
+      if (p && b.rings && b.rings.length) addPlace(p, b.rings);
     });
     var missing = places.filter(function (p) { return !shapes[p.name] && (p.weekdays || p.weekend); }).map(function (p) { return nameOf(p); });
     if (missing.length && missingEl) missingEl.textContent = t("Not on the map (yet): ", "(Nog) niet op de kaart: ") + missing.join(", ") + ".";
@@ -84,9 +92,18 @@
   }
 
   function loadBuildings() {
+    // the saved file on this site is quick; only ask overpass when it's missing
+    if (!me || !window.fetch) return loadOverpass();
+    fetch(new URL("../data/buildings.json", me).href)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (list) { if (!list || !list.length) throw new Error("empty"); useData(list); })
+      .catch(loadOverpass);
+  }
+
+  function loadOverpass() {
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
-    if (cached && cached.time && Date.now() - cached.time < WEEK && cached.elements) { useData(cached.elements); return; }
+    if (cached && cached.time && Date.now() - cached.time < WEEK && cached.elements) { useData(fromOverpass(cached.elements)); return; }
     var q = '[out:json][timeout:25];(way["building"]["name"](' + BBOX + ');relation["building"]["name"](' + BBOX + '););out geom;';
     fetch("https://overpass-api.de/api/interpreter", {
       method: "POST", body: "data=" + encodeURIComponent(q),
@@ -95,10 +112,10 @@
       .then(function (data) {
         var els = (data.elements || []).filter(function (e) { return matchPlace(e.tags && e.tags.name); });
         try { localStorage.setItem(CACHE_KEY, JSON.stringify({ time: Date.now(), elements: els })); } catch (e) {}
-        useData(els);
+        useData(fromOverpass(els));
       })
       .catch(function () {
-        if (cached && cached.elements) { useData(cached.elements); return; }
+        if (cached && cached.elements) { useData(fromOverpass(cached.elements)); return; }
         if (missingEl) missingEl.textContent = t("The buildings couldn't be loaded right now. Try again in a minute.",
                                                  "De gebouwen konden nu niet geladen worden. Probeer het over een minuut opnieuw.");
       });

@@ -1,0 +1,60 @@
+# downloads data/buildings.json (campus building outlines from openstreetmap)
+# runs once when this file changes; run it again by hand from the actions tab if buildings change
+name: update building outlines
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/buildings.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: download outlines
+        run: |
+          python3 - <<'PY'
+          import json, urllib.parse, urllib.request
+          bbox = "51.4425,5.4790,51.4545,5.5010"
+          q = '[out:json][timeout:60];(way["building"]["name"](%s);relation["building"]["name"](%s););out geom;' % (bbox, bbox)
+          data = None
+          for server in ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]:
+              try:
+                  req = urllib.request.Request(server, data=urllib.parse.urlencode({"data": q}).encode(), headers={"User-Agent": "istueopen.nl"})
+                  data = json.load(urllib.request.urlopen(req, timeout=120))
+                  break
+              except Exception as e:
+                  print("failed:", server, e)
+          if not data:
+              raise SystemExit("no server answered")
+          out = []
+          for e in data.get("elements", []):
+              name = (e.get("tags") or {}).get("name")
+              rings = []
+              if e["type"] == "way" and e.get("geometry"):
+                  rings.append(e["geometry"])
+              if e["type"] == "relation":
+                  rings += [m["geometry"] for m in e.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
+              rings = [[[round(p["lat"], 6), round(p["lon"], 6)] for p in r] for r in rings]
+              if name and rings:
+                  out.append({"name": name, "rings": rings})
+          if len(out) < 10:
+              raise SystemExit("too few buildings (%d), keeping the old file" % len(out))
+          out.sort(key=lambda b: b["name"])
+          with open("data/buildings.json", "w") as f:
+              json.dump(out, f, separators=(",", ":"))
+          print(len(out), "buildings")
+          PY
+      - name: commit if changed
+        run: |
+          git add data/buildings.json
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "updated building outlines"
+          git push
