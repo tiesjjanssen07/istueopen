@@ -21,7 +21,14 @@ jobs:
           python3 - <<'PY'
           import json, urllib.parse, urllib.request
           bbox = "51.4425,5.4790,51.4545,5.5010"
-          q = '[out:json][timeout:60];(way["building"]["name"](%s);relation["building"]["name"](%s););out geom;' % (bbox, bbox)
+          # all named buildings, plus anything named like a place in js/hours.js (some aren't tagged as a building)
+          import re
+          src = open("js/hours.js").read()
+          names = set(re.findall(r'name: "([^"]+)"', src)) | set(re.findall(r'osm: "([^"]+)"', src))
+          esc = lambda x: "".join("\\\\" + c if c in ".^$*+?()[]{}|\\" else c for c in x.replace('"', ""))
+          rx = "^(" + "|".join(esc(x) for x in sorted(names)) + ")$"
+          q = ('[out:json][timeout:90];(way["building"]["name"](%s);relation["building"]["name"](%s);'
+               'way["name"~"%s",i](%s);relation["name"~"%s",i](%s););out geom;') % (bbox, bbox, rx, bbox, rx, bbox)
           data = None
           for server in ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]:
               try:
@@ -32,7 +39,7 @@ jobs:
                   print("failed:", server, e)
           if not data:
               raise SystemExit("no server answered")
-          out = []
+          out, seen = [], set()
           for e in data.get("elements", []):
               name = (e.get("tags") or {}).get("name")
               rings = []
@@ -41,7 +48,9 @@ jobs:
               if e["type"] == "relation":
                   rings += [m["geometry"] for m in e.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
               rings = [[[round(p["lat"], 6), round(p["lon"], 6)] for p in r] for r in rings]
-              if name and rings:
+              rings = [r for r in rings if len(r) > 3 and r[0] == r[-1]]  # only closed shapes, not roads or paths
+              if name and rings and name not in seen:
+                  seen.add(name)
                   out.append({"name": name, "rings": rings})
           if len(out) < 10:
               raise SystemExit("too few buildings (%d), keeping the old file" % len(out))
