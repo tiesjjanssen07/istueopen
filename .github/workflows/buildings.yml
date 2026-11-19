@@ -30,7 +30,10 @@ jobs:
           q = ('[out:json][timeout:90];(way["building"]["name"](%s);relation["building"]["name"](%s);'
                'way["name"~"%s",i](%s);relation["name"~"%s",i](%s););out geom;') % (bbox, bbox, rx, bbox, rx, bbox)
           data = None
-          for server in ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]:
+          import time
+          servers = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"] * 3
+          for i, server in enumerate(servers):
+              if i: time.sleep(30)
               try:
                   req = urllib.request.Request(server, data=urllib.parse.urlencode({"data": q}).encode(), headers={"User-Agent": "istueopen.nl"})
                   data = json.load(urllib.request.urlopen(req, timeout=120))
