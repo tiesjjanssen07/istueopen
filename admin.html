@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Admin – Is the TU/e open?</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="stylesheet" href="style.css">
-<script src="site.js"></script>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/site.js"></script>
 </head>
 <body>
 
@@ -29,7 +29,7 @@
   <p id="adminStatus" role="status"></p>
 
   <h2>Reports about wrong hours (<span id="reportCount">0</span>)</h2>
-  <p><small>Fix the hours in hours.js, upload it, then delete the report. For “Campus map” reports about a missing building, add an <code>osm:</code> name to that building in hours.js.</small></p>
+  <p><small>Fix the hours in js/hours.js, upload it, then delete the report. For “Campus map” reports about a missing building, add an <code>osm:</code> name to that building in js/hours.js.</small></p>
   <div id="reports"></div>
 
 </div>
@@ -49,7 +49,7 @@ setTimeout(function () {
   if (!window.pageReady && s && !s.textContent) s.textContent = "The page's code didn't start. Try the online (GitHub Pages) version, or another browser.";
 }, 8000);
 </script>
-<script src="firebase-config.js"></script>
+<script src="js/firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
@@ -60,7 +60,7 @@ import { getFirestore, collection, onSnapshot, doc, deleteDoc }
 const $ = (id) => document.getElementById(id);
 
 if (!window.FIREBASE_CONFIG || String(window.FIREBASE_CONFIG.apiKey).startsWith("PASTE")) {
-  $("loginStatus").textContent = "Setup not finished: paste your Firebase config into firebase-config.js.";
+  $("loginStatus").textContent = "Setup not finished: paste your Firebase config into js/firebase-config.js.";
   throw new Error("Firebase config missing");
 }
 
@@ -85,8 +85,8 @@ $("login").addEventListener("submit", async (e) => {
       "auth/invalid-email": "That doesn't look like an email address.",
       "auth/operation-not-allowed": "Email/Password sign-in isn't enabled. Turn it on in Firebase: Authentication → Sign-in method.",
       "auth/configuration-not-found": "Authentication isn't set up yet. In Firebase, open Authentication and click Get started, then enable Email/Password.",
-      "auth/invalid-api-key": "The apiKey in firebase-config.js is wrong. Copy the config again from Project settings.",
-      "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "The apiKey in firebase-config.js is wrong. Copy the config again from Project settings.",
+      "auth/invalid-api-key": "The apiKey in js/firebase-config.js is wrong. Copy the config again from Project settings.",
+      "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "The apiKey in js/firebase-config.js is wrong. Copy the config again from Project settings.",
       "auth/unauthorized-domain": "This website's domain isn't allowed. Add it in Firebase: Authentication → Settings → Authorized domains.",
       "auth/network-request-failed": "Couldn't reach Firebase. Check your internet connection, or try the online version instead of the file on your computer.",
       "auth/too-many-requests": "Too many attempts. Wait a few minutes and try again."

@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Verkeerde tijden melden – Is de TU/e open?</title>
-<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="icon" type="image/png" href="../img/favicon.png">
 <link rel="alternate" hreflang="en" href="https://istueopen.nl/report">
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="../style.css">
-<script src="../site.js"></script>
+<link rel="stylesheet" href="../css/style.css">
+<script src="../js/site.js"></script>
 </head>
 <body>
 
@@ -42,9 +42,9 @@ Alleen ik zie deze meldingen; ze worden niet gepubliceerd.</p>
 
 <p><small>Zet er geen persoonlijke gegevens in. Onofficieel studentenproject, niet verbonden aan de TU/e. Bezoeken worden anoniem geteld, zonder cookies. <a href="privacy">Privacy</a></small></p>
 
-<script src="../hours.js"></script>
+<script src="../js/hours.js"></script>
 <script>
-// dropdown is filled from hours.js
+// dropdown is filled from js/hours.js
 (function () {
   var select = document.getElementById("place");
   [["Gebouwen", window.BUILDINGS], ["Andere voorzieningen", window.SERVICES], ["Eten", window.FOOD]].forEach(function (group) {
@@ -66,7 +66,7 @@ window.addEventListener("error", function (e) {
   document.getElementById("status").textContent = "Er kon iets niet laden. Probeer het later nog eens.";
 }, true);
 </script>
-<script src="../firebase-config.js"></script>
+<script src="../js/firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp }
@@ -74,7 +74,7 @@ import { getFirestore, collection, addDoc, serverTimestamp }
 
 const $ = (id) => document.getElementById(id);
 if (!window.FIREBASE_CONFIG || String(window.FIREBASE_CONFIG.apiKey).startsWith("PASTE")) {
-  $("status").textContent = "Meldingen zijn nog niet ingesteld (firebase-config.js ontbreekt of is niet ingevuld).";
+  $("status").textContent = "Meldingen zijn nog niet ingesteld (js/firebase-config.js ontbreekt of is niet ingevuld).";
   $("send").disabled = true;
   throw new Error("Firebase config missing");
 }

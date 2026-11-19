@@ -1,4 +1,4 @@
-// logic for the opening hours pages (the hours themselves are in hours.js)
+// logic for the opening hours pages (the hours themselves are in js/hours.js)
 
 // dutch pages have <html lang="nl">
 var NL = document.documentElement.lang === "nl";

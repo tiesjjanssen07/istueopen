@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Report wrong hours – Is the TU/e open?</title>
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="alternate" hreflang="en" href="https://istueopen.nl/report">
 <link rel="alternate" hreflang="nl" href="https://istueopen.nl/nl/melden">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="style.css">
-<script src="site.js"></script>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/site.js"></script>
 </head>
 <body>
 
@@ -42,9 +42,9 @@ Only I can see these reports; they are not published.</p>
 
 <p><small>Please don't include personal information. Unofficial student project, not affiliated with TU/e. Visits are counted anonymously, without cookies. <a href="privacy">Privacy</a></small></p>
 
-<script src="hours.js"></script>
+<script src="js/hours.js"></script>
 <script>
-// dropdown is filled from hours.js
+// dropdown is filled from js/hours.js
 (function () {
   var select = document.getElementById("place");
   [["Buildings", window.BUILDINGS], ["Other services", window.SERVICES], ["Food", window.FOOD]].forEach(function (group) {
@@ -66,7 +66,7 @@ window.addEventListener("error", function (e) {
   document.getElementById("status").textContent = "Something failed to load. Try again later.";
 }, true);
 </script>
-<script src="firebase-config.js"></script>
+<script src="js/firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp }
@@ -74,7 +74,7 @@ import { getFirestore, collection, addDoc, serverTimestamp }
 
 const $ = (id) => document.getElementById(id);
 if (!window.FIREBASE_CONFIG || String(window.FIREBASE_CONFIG.apiKey).startsWith("PASTE")) {
-  $("status").textContent = "Reports aren't set up yet (firebase-config.js is missing or not filled in).";
+  $("status").textContent = "Reports aren't set up yet (js/firebase-config.js is missing or not filled in).";
   $("send").disabled = true;
   throw new Error("Firebase config missing");
 }

@@ -110,7 +110,7 @@
   // offline support
   if ("serviceWorker" in navigator && me && location.protocol !== "file:") {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register(new URL("sw.js", me).href).catch(function () {});
+      navigator.serviceWorker.register(new URL("../sw.js", me).href).catch(function () {});
     });
   }
 })();
