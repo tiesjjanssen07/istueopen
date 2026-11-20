@@ -57,16 +57,30 @@
   }
 
   // walkways: drawn on top of the buildings, coloured like them
-  function walkStyle(w, now) { var c = COLORS[statusClass(status(w, now))]; return { color: "#ffffff", weight: 1.5, fillColor: c, fillOpacity: 1 }; }
+  function walkStyle(w, now) { return { color: COLORS[statusClass(status(w, now))], weight: 6, opacity: 1, lineCap: "butt" }; }
+  // openstreetmap draws a walkway as a thin rectangle; use the line through the middle of its short sides
+  function middleLine(pts) {
+    function d(a, b) { return Math.pow(a[0] - b[0], 2) + Math.pow((a[1] - b[1]) * 0.62, 2); }
+    function mid(a, b) { return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; }
+    var ring = pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
+    if (!ring) return pts;
+    if (pts.length === 5) {
+      var e = [0, 1, 2, 3].map(function (i) { return { i: i, len: d(pts[i], pts[i + 1]) }; }).sort(function (x, y) { return x.len - y.len; });
+      return [mid(pts[e[0].i], pts[e[0].i + 1]), mid(pts[e[1].i], pts[e[1].i + 1])];
+    }
+    var best = [pts[0], pts[1]], far = 0;
+    pts.forEach(function (a) { pts.forEach(function (b) { if (d(a, b) > far) { far = d(a, b); best = [a, b]; } }); });
+    return best;
+  }
   function walkText(w, now) { return nameOf(w) + ": " + status(w, now).text.replace(/^\S+\s/, ""); }
   function drawWalkways() {
     var now = amsterdamNow();
     window.WALKWAY_LIST.forEach(function (w) {
       if (!w.line || w.line.length < 2) return;
-      var layer = (w.line.length > 3 && w.line[0][0] === w.line[w.line.length - 1][0] && w.line[0][1] === w.line[w.line.length - 1][1])
-        ? L.polygon(w.line, walkStyle(w, now)) : L.polyline(w.line, { color: COLORS[statusClass(status(w, now))], weight: 5 });
-      layer.addTo(map).bindTooltip(walkText(w, now), { sticky: true });
-      if (layer.bringToFront) layer.bringToFront();
+      var line = middleLine(w.line);
+      L.polyline(line, { color: "#ffffff", weight: 10, opacity: 1, lineCap: "butt", interactive: false }).addTo(map);
+      var layer = L.polyline(line, walkStyle(w, now)).addTo(map);
+      layer.bindTooltip(walkText(w, now), { sticky: true });
       walkLayers.push({ w: w, layer: layer });
     });
   }

@@ -13,8 +13,7 @@ A quick way to see which buildings, study spots and places to eat on the TU/e ca
 - **Open right now:** a clear yes or no for the whole campus, with a warning when a building is about to close
 - **Every building, the library and the Sports Centre,** with today's hours and the hours for the week
 - **Food:** all canteens, cafés and restaurants on campus
-- **Campus map** with building outlines and walking routes between buildings
-- **Walkways:** which walkways between buildings are open, worked out from the hours of the buildings on both ends
+- **Campus map** with building outlines, walking routes and the walkways between buildings (open when the buildings on both ends are open)
 - **Pins:** keep the buildings you use most at the top, and share a link to one building
 - **Study spots, exam countdown and rain warning**
 - **Holidays:** automatic warnings on Dutch public holidays and TU/e bridge days
