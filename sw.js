@@ -1,6 +1,6 @@
 // keeps a copy of the site so it also opens without internet.
 // always tries the network first, so updates show up straight away when online.
-var CACHE = "istueopen-v20";
+var CACHE = "istueopen-v21";
 var FILES = [
   "./", "food", "map", "report", "privacy", "404.html",
   "nl/", "nl/eten", "nl/kaart", "nl/melden", "nl/privacy",

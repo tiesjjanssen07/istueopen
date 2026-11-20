@@ -14,6 +14,7 @@ A quick way to see which buildings, study spots and places to eat on the TU/e ca
 - **Every building, the library and the Sports Centre,** with today's hours and the hours for the week
 - **Food:** all canteens, cafés and restaurants on campus
 - **Campus map** with building outlines and walking routes between buildings
+- **Walkways:** which walkways between buildings are open, worked out from the hours of the buildings on both ends
 - **Pins:** keep the buildings you use most at the top, and share a link to one building
 - **Study spots, exam countdown and rain warning**
 - **Holidays:** automatic warnings on Dutch public holidays and TU/e bridge days
@@ -22,7 +23,7 @@ A quick way to see which buildings, study spots and places to eat on the TU/e ca
 
 ## How it works
 
-It's a plain static site: HTML, CSS and JavaScript, with no framework and no build step. All opening hours live in one file, [`js/hours.js`](js/hours.js), and the pages work out in the browser what's open, using Dutch time. Public holidays such as Easter and King's Day are calculated, so they don't need updating every year. The building outlines for the map are downloaded from OpenStreetMap by a GitHub Action and saved in the repo, so the map loads instantly.
+It's a plain static site: HTML, CSS and JavaScript, with no framework and no build step. All opening hours live in one file, [`js/hours.js`](js/hours.js), and the pages work out in the browser what's open, using Dutch time. Public holidays such as Easter and King's Day are calculated, so they don't need updating every year. The building outlines and walkways are downloaded from OpenStreetMap by a GitHub Action and saved in the repo, so the map loads instantly.
 
 ```
 index.html, food.html, map.html,     the English pages
@@ -34,7 +35,7 @@ js/map.js                            campus map and walking routes
 js/site.js                           theme, language and offline support
 css/style.css                        the design
 img/                                 icons and preview images
-data/buildings.json                  building outlines for the map, from OpenStreetMap
+data/buildings.json, walkways.json   building outlines and walkways for the map, from OpenStreetMap
 sw.js                                offline support
 admin.html                           private page for reading reports
 ```

@@ -62,6 +62,15 @@
   <tbody id="buildings"></tbody>
 </table>
 
+<div id="walkways" hidden data-jump="Loopbruggen">
+<h2>Loopbruggen</h2>
+<p class="muted">De loopbruggen tussen gebouwen op de eerste verdieping. Er zijn geen officiële tijden voor de loopbruggen, dus een loopbrug telt als open als de gebouwen aan beide kanten open zijn. Tik erop om hem op de kaart te zien.</p>
+<table>
+  <thead id="walkway-head"></thead>
+  <tbody id="walkway-rows"></tbody>
+</table>
+</div>
+
 <h2 id="other-services" data-jump="Voorzieningen">Andere voorzieningen</h2>
 <table border="1" cellpadding="6" cellspacing="0">
   <thead id="services-head"></thead>
@@ -103,6 +112,10 @@ function render() {
   renderBanner("banner", now);
   renderTable("head", "buildings", window.BUILDINGS, now, false);
   renderTable("services-head", "services", window.SERVICES, now, true);
+  if (window.WALKWAY_LIST.length) {
+    document.getElementById("walkways").hidden = false;
+    renderTable("walkway-head", "walkway-rows", window.WALKWAY_LIST, now, false);
+  }
   renderWeather("weather", now);
   renderExam("exam", now);
   renderMine("mine", window.BUILDINGS.concat(window.SERVICES), now, "Jouw gebouwen");
@@ -154,6 +167,7 @@ function render() {
 
 document.getElementById("checked").textContent = checkedText();
 keepFresh(render);
+loadWalkways(function () { window.rerender(); });
 </script>
 <!-- goatcounter -->
 <script data-goatcounter="https://istueopen.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

@@ -51,9 +51,22 @@ function fmt(min) {
   var h = Math.floor(min / 60), m = min % 60;
   return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
 }
+// the overlap of two opening hours, e.g. "07:30-22:00" and "08:30-20:00" -> "08:30-20:00"
+function joinRange(r1, r2) {
+  if (r1 === "?" || r2 === "?") return "?";
+  var a = parseRange(r1), b = parseRange(r2);
+  if (!a || !b) return null;
+  var open = Math.max(a.open, b.open), close = Math.min(a.close, b.close);
+  return close > open ? fmt(open) + "-" + fmt(close) : null;
+}
 function dash(r) { return r ? r.replace("-", "–") : t("Closed", "Gesloten"); }
 
 function hoursOn(b, dateStr, day) {
+  // a walkway is open when the buildings on both ends are open
+  if (b.parts) {
+    var hs = b.parts.map(function (p) { return hoursOn(p, dateStr, day); });
+    return { range: hs.map(function (h) { return h.range; }).reduce(joinRange), label: hs.map(function (h) { return h.label; }).filter(Boolean)[0] || "" };
+  }
   var normal = (day === 6 && b.saturday !== undefined) ? b.saturday
              : (day === 0 && b.sunday !== undefined) ? b.sunday
              : (day === 0 || day === 6) ? b.weekend : b.weekdays;
@@ -105,6 +118,7 @@ function weekendText(b) {
 }
 
 function mapLink(b) {
+  if (b.href) { var w = el("a", nameOf(b)); w.href = b.href; w.title = t("Show it on the campus map", "Bekijk het op de kaart"); return w; }
   var q = b.mapQuery || ((b.building && b.building !== b.name ? b.name + " " + b.building : b.name) + " TU Eindhoven");
   var a = el("a", nameOf(b));
   a.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
@@ -168,7 +182,7 @@ function renderTable(headId, bodyId, items, now, withBuilding) {
   table.hidden = narrow; box.hidden = !narrow;
   if (narrow) return renderCards(box, bodyId, items, now, withBuilding);
 
-  var cols = [withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu"), t("Today", "Vandaag"), t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo")];
+  var cols = [items[0] && items[0].walkway ? t("Walkway", "Loopbrug") : withBuilding ? t("Name", "Naam") : t("Building", "Gebouw"), t("Right now", "Nu"), t("Today", "Vandaag"), t("Mon–Fri", "ma–vr"), t("Sat–Sun", "za–zo")];
   var hr = el("tr");
   cols.forEach(function (c) { var th = el("th", c); th.scope = "col"; hr.append(th); });
   head.append(hr);
@@ -244,6 +258,57 @@ function renderCards(box, key, items, now, withBuilding) {
   });
   if (!ul.children.length) { var none = el("p", t("Nothing here right now.", "Hier is nu niets.")); none.className = "empty"; box.append(none); }
   else box.append(ul);
+}
+
+// match a name from openstreetmap to one of our places ("De Zwarte Doos" -> "Zwarte Doos")
+function placeForOsm(osmName, places) {
+  function norm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  var n = norm(osmName), i;
+  for (i = 0; i < places.length; i++) if (n === norm(places[i].osm || places[i].name) || n === norm(places[i].name)) return places[i];
+  for (i = 0; i < places.length; i++) {
+    var q = norm(places[i].osm || places[i].name);
+    if (q.length >= 4 && n.indexOf(q) !== -1) return places[i];
+  }
+  return null;
+}
+
+// walkways between buildings, from data/walkways.json (openstreetmap). no official hours:
+// a walkway counts as open when both buildings are open
+window.WALKWAY_LIST = [];
+function makeWalkway(a, b, line) {
+  if (nameOf(b) < nameOf(a)) { var x = a; a = b; b = x; }
+  var w = { name: a.name + " ↔ " + b.name, nameNl: nameOf(a) + " ↔ " + nameOf(b), walkway: true, parts: [a, b], line: line,
+            href: t("map", "kaart") + "?from=" + encodeURIComponent(a.name) + "&to=" + encodeURIComponent(b.name),
+            weekdays: joinRange(a.weekdays, b.weekdays), weekend: joinRange(a.weekend, b.weekend) };
+  function day(p, k) { return p[k] !== undefined ? p[k] : p.weekend; }
+  if ([a, b].some(function (p) { return p.saturday !== undefined || p.sunday !== undefined; })) {
+    w.saturday = joinRange(day(a, "saturday"), day(b, "saturday"));
+    w.sunday = joinRange(day(a, "sunday"), day(b, "sunday"));
+  }
+  var shut = [a, b].filter(function (p) { return !p.weekdays && !p.weekend && p.saturday === undefined && p.sunday === undefined; })[0];
+  if (shut) { w.note = shut.name + ": " + (shut.note || "closed"); w.noteNl = nameOf(shut) + ": " + (shut.noteNl || "gesloten"); }
+  return w;
+}
+function loadWalkways(done) {
+  var me = document.querySelector('script[src$="js/open.js"]');
+  if (!window.fetch || !me) return;
+  fetch(new URL("../data/walkways.json", me.src).href)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (list) {
+      var places = window.BUILDINGS || [], seen = {};
+      window.WALKWAY_LIST = [];
+      list.forEach(function (x) {
+        var a = placeForOsm(x.a, places), b = placeForOsm(x.b, places);
+        if (!a || !b || a === b) return;
+        var w = makeWalkway(a, b, x.line);
+        if (seen[w.name]) return;
+        seen[w.name] = true;
+        window.WALKWAY_LIST.push(w);
+      });
+      window.WALKWAY_LIST.sort(function (p, q) { return nameOf(p) < nameOf(q) ? -1 : 1; });
+      if (done) done();
+    })
+    .catch(function () {});
 }
 
 // dutch public holidays
@@ -346,6 +411,7 @@ function toggleFav(name, btn) {
   try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
 }
 function starButton(b) {
+  if (b.walkway) return document.createTextNode("");
   var on = isFav(b.name), btn = el("button", on ? "⭐" : "☆");
   btn.type = "button";
   btn.title = on ? t("Remove from your list", "Verwijderen uit je lijst") : t("Pin to the top", "Bovenaan vastzetten");

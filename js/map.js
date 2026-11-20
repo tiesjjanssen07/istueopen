@@ -38,6 +38,7 @@
     return null;
   }
 
+  var walkLayers = []; // [{ w, layer }]
   var shapes = {};   // place name -> [L.polygon]
   var centers = {};  // place name -> [lat, lon]
   var sel = [], routeLine = null, routeReq = 0;
@@ -49,9 +50,25 @@
   function restyle() {
     var now = amsterdamNow();
     places.forEach(function (p) { (shapes[p.name] || []).forEach(function (s) { s.setStyle(styleFor(p, now)); }); });
+    walkLayers.forEach(function (x) { x.layer.setStyle(walkStyle(x.w, now)); x.layer.setTooltipContent(walkText(x.w, now)); });
     var c = document.getElementById("clock");
     if (c) c.textContent = t("It is " + DAYS[now.day] + " " + now.time + ". Colours update live.", "Het is " + DAYS[now.day] + " " + now.time + ". De kleuren worden live bijgewerkt.");
     if (sel.length === 2) describeRoute(lastRoute);
+  }
+
+  // walkways: drawn on top of the buildings, coloured like them
+  function walkStyle(w, now) { var c = COLORS[statusClass(status(w, now))]; return { color: "#ffffff", weight: 1.5, fillColor: c, fillOpacity: 1 }; }
+  function walkText(w, now) { return nameOf(w) + ": " + status(w, now).text.replace(/^\S+\s/, ""); }
+  function drawWalkways() {
+    var now = amsterdamNow();
+    window.WALKWAY_LIST.forEach(function (w) {
+      if (!w.line || w.line.length < 2) return;
+      var layer = (w.line.length > 3 && w.line[0][0] === w.line[w.line.length - 1][0] && w.line[0][1] === w.line[w.line.length - 1][1])
+        ? L.polygon(w.line, walkStyle(w, now)) : L.polyline(w.line, { color: COLORS[statusClass(status(w, now))], weight: 5 });
+      layer.addTo(map).bindTooltip(walkText(w, now), { sticky: true });
+      if (layer.bringToFront) layer.bringToFront();
+      walkLayers.push({ w: w, layer: layer });
+    });
   }
 
   function addPlace(p, rings) {
@@ -83,6 +100,7 @@
       var p = matchPlace(b.name);
       if (p && b.rings && b.rings.length) addPlace(p, b.rings);
     });
+    if (!walkLayers.length && window.loadWalkways) loadWalkways(drawWalkways);
     var missing = places.filter(function (p) { return !shapes[p.name] && (p.weekdays || p.weekend); }).map(function (p) { return nameOf(p); });
     if (missing.length && missingEl) missingEl.textContent = t("Not on the map (yet): ", "(Nog) niet op de kaart: ") + missing.join(", ") + ".";
     // start on the main part of the campus; the sports centre and vector are a short scroll north
