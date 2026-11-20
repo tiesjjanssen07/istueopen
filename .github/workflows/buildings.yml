@@ -1,4 +1,4 @@
-# downloads data/buildings.json (campus building outlines from openstreetmap)
+# downloads data/buildings.json and data/walkways.json (building outlines and walkways from openstreetmap)
 # runs when this file or an osm: name in js/hours.js changes; run it by hand from the actions tab if buildings change
 name: update building outlines
 
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: [".github/workflows/buildings.yml", "js/hours.js"]
+    paths: [".github/workflows/buildings.yml", ".github/scripts/osm.py", "js/hours.js"]
 
 permissions:
   contents: write
@@ -16,60 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: download outlines
-        run: |
-          python3 - <<'PY'
-          import json, urllib.parse, urllib.request
-          bbox = "51.4425,5.4790,51.4545,5.5010"
-          # all named buildings, plus anything named like a place in js/hours.js (some aren't tagged as a building)
-          import re
-          src = open("js/hours.js").read()
-          names = set(re.findall(r'name: "([^"]+)"', src)) | set(re.findall(r'osm: "([^"]+)"', src))
-          esc = lambda x: "".join("\\\\" + c if c in ".^$*+?()[]{}|\\" else c for c in x.replace('"', ""))
-          rx = "^(" + "|".join(esc(x) for x in sorted(names)) + ")$"
-          q = ('[out:json][timeout:90];(way["building"]["name"](%s);relation["building"]["name"](%s);'
-               'way["name"~"%s",i](%s);relation["name"~"%s",i](%s););out geom;') % (bbox, bbox, rx, bbox, rx, bbox)
-          data = None
-          import time
-          servers = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter",
-                     "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter"] * 2
-          for i, server in enumerate(servers):
-              if i: time.sleep(30)
-              try:
-                  req = urllib.request.Request(server, data=urllib.parse.urlencode({"data": q}).encode(), headers={"User-Agent": "istueopen.nl"})
-                  data = json.load(urllib.request.urlopen(req, timeout=120))
-                  break
-              except Exception as e:
-                  print("failed:", server, e)
-          if not data:
-              raise SystemExit("no server answered")
-          out, seen = [], set()
-          for e in data.get("elements", []):
-              name = (e.get("tags") or {}).get("name")
-              rings = []
-              if e["type"] == "way" and e.get("geometry"):
-                  rings.append(e["geometry"])
-              if e["type"] == "relation":
-                  rings += [m["geometry"] for m in e.get("members", []) if m.get("role") == "outer" and m.get("geometry")]
-              rings = [[[round(p["lat"], 6), round(p["lon"], 6)] for p in r] for r in rings]
-              rings = [r for r in rings if len(r) > 3 and r[0] == r[-1]]  # only closed shapes, not roads or paths
-              if name and rings and name not in seen:
-                  seen.add(name)
-                  out.append({"name": name, "rings": rings})
-          if len(out) < 10:
-              raise SystemExit("too few buildings (%d), keeping the old file" % len(out))
-          out.sort(key=lambda b: b["name"])
-          import os
-          os.makedirs("data", exist_ok=True)
-          with open("data/buildings.json", "w") as f:
-              json.dump(out, f, separators=(",", ":"))
-          print(len(out), "buildings")
-          PY
+      - name: download outlines and walkways
+        run: python3 .github/scripts/osm.py
       - name: commit if changed
         run: |
-          git add data/buildings.json
+          git add data/buildings.json data/walkways.json
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "updated building outlines"
+          git commit -m "updated map data"
           git push
